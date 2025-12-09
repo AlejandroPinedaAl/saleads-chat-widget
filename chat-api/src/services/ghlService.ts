@@ -155,7 +155,7 @@ class GHLService {
     lastName?: string;
   }): Promise<{ contactId: string; isNew: boolean }> {
     try {
-      // Crear contacto directamente (GHL maneja duplicados automáticamente)
+      // Crear contacto directamente
       const created = await this.createContact({
         firstName: data.firstName || 'Widget',
         lastName: data.lastName || 'User',
@@ -172,6 +172,34 @@ class GHLService {
 
       return { contactId: created.id, isNew: true };
     } catch (error: any) {
+      // Si el error es por contacto duplicado, usar el contactId existente
+      if (error.response?.status === 400 && error.response?.data?.meta?.contactId) {
+        const existingContactId = error.response.data.meta.contactId;
+        logger.info('[GHLService] Contact already exists, using existing ID', {
+          contactId: existingContactId,
+          matchingField: error.response.data.meta.matchingField,
+        });
+
+        // Actualizar el contacto existente con el sessionId
+        try {
+          await this.updateContact(existingContactId, {
+            customFields: [
+              {
+                field: 'widget_session_id',
+                value: data.sessionId,
+              },
+            ],
+          });
+        } catch (updateError: any) {
+          logger.warn('[GHLService] Could not update existing contact', {
+            contactId: existingContactId,
+            error: updateError.message,
+          });
+        }
+
+        return { contactId: existingContactId, isNew: false };
+      }
+
       logger.error('[GHLService] Error upserting contact', {
         data,
         error: error.message,
