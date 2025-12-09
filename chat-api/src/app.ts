@@ -11,6 +11,10 @@ import { logger } from './utils/logger.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { apiRateLimiter } from './middleware/rateLimit.js';
 import chatRoutes from './routes/chat.routes.js';
+import { redisService } from './services/redisService.js';
+import { ghlService } from './services/ghlService.js';
+import { socketService } from './services/socketService.js';
+import { asyncHandler } from './middleware/errorHandler.js';
 
 /**
  * Crear y configurar Express app
@@ -106,6 +110,48 @@ export function createApp(): Express {
       },
     });
   });
+
+  // Health check endpoint (direct access)
+  app.get('/api/health', asyncHandler(async (_req, res) => {
+    const startTime = Date.now();
+
+    // Verificar servicios
+    const [redisHealthy, ghlHealthy, socketHealthy] = await Promise.all([
+      redisService.healthCheck(),
+      ghlService.healthCheck(),
+      Promise.resolve(socketService.healthCheck()),
+    ]);
+
+    const allHealthy = redisHealthy && ghlHealthy && socketHealthy;
+    const status = allHealthy ? 'ok' : 'degraded';
+
+    const responseTime = Date.now() - startTime;
+
+    const response = {
+      status,
+      services: {
+        redis: redisHealthy ? 'connected' : 'disconnected',
+        ghl: ghlHealthy ? 'connected' : 'disconnected',
+        socket: socketHealthy ? 'running' : 'stopped',
+      },
+      metrics: {
+        connectedClients: socketService.getConnectedClientsCount(),
+        activeSessions: socketService.getActiveSessions().length,
+        responseTime: `${responseTime}ms`,
+      },
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    };
+
+    const statusCode = allHealthy ? 200 : 503;
+    res.status(statusCode).json(response);
+
+    logger.info('[App] Health check', {
+      status,
+      responseTime,
+      services: response.services,
+    });
+  }));
 
   // Chat routes
   app.use('/api/chat', chatRoutes);
