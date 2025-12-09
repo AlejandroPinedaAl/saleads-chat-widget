@@ -218,16 +218,28 @@ class GHLService {
         locationId: data.locationId || this.locationId,
       };
 
+      logger.debug('[GHLService] Sending message payload', { payload });
+
       const response = await this.client.post('/conversations/messages', payload);
 
       const messageId = response.data.messageId || response.data.id;
-      logger.info('[GHLService] Message sent', { messageId, contactId: data.contactId, locationId: payload.locationId });
+      logger.info('[GHLService] Message sent', { 
+        messageId, 
+        contactId: data.contactId, 
+        locationId: payload.locationId,
+        type: payload.type,
+        responseData: response.data,
+      });
 
       return { messageId };
     } catch (error: any) {
       logger.error('[GHLService] Error sending message', {
-        data,
+        payload: {
+          ...data,
+          locationId: data.locationId || this.locationId,
+        },
         error: error.response?.data || error.message,
+        status: error.response?.status,
       });
       throw error;
     }

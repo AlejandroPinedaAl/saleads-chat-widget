@@ -64,13 +64,20 @@ class RedisService {
   async getSession(sessionId: string): Promise<SessionData | null> {
     try {
       const key = this.getSessionKey(sessionId);
-      const data = await this.client.get<string>(key);
+      const data = await this.client.get(key);
 
       if (!data) {
         return null;
       }
 
-      return JSON.parse(data) as SessionData;
+      // Upstash Redis puede devolver string o objeto directamente
+      if (typeof data === 'string') {
+        return JSON.parse(data) as SessionData;
+      } else if (typeof data === 'object') {
+        return data as SessionData;
+      }
+
+      return null;
     } catch (error: any) {
       logger.error('[RedisService] Error getting session', {
         sessionId,
