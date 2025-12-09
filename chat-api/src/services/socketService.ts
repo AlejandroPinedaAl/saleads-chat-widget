@@ -199,6 +199,26 @@ class SocketService {
           // Enviar mensaje a GoHighLevel
           if (contactId) {
             try {
+              // Para WhatsApp, asegurar que el contacto tenga teléfono
+              // Si tenemos teléfono en metadata, actualizar el contacto antes de enviar
+              if (metadata?.phone) {
+                try {
+                  await ghlService.updateContact(contactId, {
+                    phone: metadata.phone,
+                  });
+                  logger.info('[SocketService] Contact phone updated', {
+                    contactId,
+                    phone: metadata.phone,
+                  });
+                } catch (updateError: any) {
+                  logger.warn('[SocketService] Could not update contact phone', {
+                    contactId,
+                    error: updateError.message,
+                  });
+                  // Continuar intentando enviar el mensaje
+                }
+              }
+
               await ghlService.sendMessage({
                 type: 'WhatsApp',
                 contactId,

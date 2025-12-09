@@ -83,6 +83,26 @@ router.post(
     // Enviar mensaje a GoHighLevel
     if (contactId) {
       try {
+        // Para WhatsApp, asegurar que el contacto tenga teléfono
+        // Si tenemos teléfono en metadata, actualizar el contacto antes de enviar
+        if (data.metadata?.phone) {
+          try {
+            await ghlService.updateContact(contactId, {
+              phone: data.metadata.phone,
+            });
+            logger.info('[ChatRoutes] Contact phone updated', {
+              contactId,
+              phone: data.metadata.phone,
+            });
+          } catch (updateError: any) {
+            logger.warn('[ChatRoutes] Could not update contact phone', {
+              contactId,
+              error: updateError.message,
+            });
+            // Continuar intentando enviar el mensaje
+          }
+        }
+
         await ghlService.sendMessage({
           type: 'WhatsApp',
           contactId,
