@@ -3,7 +3,7 @@
  * Configuración de Express con middlewares y rutas
  */
 
-import express, { Express } from 'express';
+import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config/index.js';
@@ -112,7 +112,7 @@ export function createApp(): Express {
   });
 
   // Health check endpoint (direct access)
-  app.get('/api/health', asyncHandler(async (_req, res) => {
+  app.get('/api/health', asyncHandler(async (_req: Request, res: Response) => {
     const startTime = Date.now();
 
     // Verificar servicios
