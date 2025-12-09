@@ -47,8 +47,13 @@ class RedisService {
       await this.client.setex(key, this.SESSION_TTL, JSON.stringify(sessionData));
 
       logger.debug('[RedisService] Session saved', { sessionId, messageCount: sessionData.messageCount });
-    } catch (error) {
-      logger.error('[RedisService] Error saving session', { sessionId, error });
+    } catch (error: any) {
+      logger.error('[RedisService] Error saving session', {
+        sessionId,
+        error: error?.message || String(error),
+        stack: error?.stack,
+        name: error?.name,
+      });
       throw error;
     }
   }
@@ -66,8 +71,13 @@ class RedisService {
       }
 
       return JSON.parse(data) as SessionData;
-    } catch (error) {
-      logger.error('[RedisService] Error getting session', { sessionId, error });
+    } catch (error: any) {
+      logger.error('[RedisService] Error getting session', {
+        sessionId,
+        error: error?.message || String(error),
+        stack: error?.stack,
+        name: error?.name,
+      });
       return null;
     }
   }
