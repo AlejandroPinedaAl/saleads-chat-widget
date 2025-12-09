@@ -22,6 +22,9 @@ import { asyncHandler } from './middleware/errorHandler.js';
 export function createApp(): Express {
   const app = express();
 
+  // Trust proxy (necesario cuando hay reverse proxy como Nginx)
+  app.set('trust proxy', true);
+
   // ============================================
   // SECURITY MIDDLEWARES
   // ============================================

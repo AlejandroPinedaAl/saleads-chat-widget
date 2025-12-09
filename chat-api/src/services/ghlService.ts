@@ -171,7 +171,7 @@ class GHLService {
           lastName: data.lastName,
           email: data.email,
           phone: data.phone,
-          customField: {
+          customFields: {
             widget_session_id: data.sessionId,
           },
         });
@@ -185,7 +185,7 @@ class GHLService {
           email: data.email,
           phone: data.phone,
           tags: ['widget-chat'],
-          customField: {
+          customFields: {
             widget_session_id: data.sessionId,
           },
         });
