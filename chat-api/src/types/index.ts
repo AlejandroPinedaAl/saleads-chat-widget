@@ -85,10 +85,12 @@ export interface GHLCreateContactRequest {
 export interface GHLSendMessageRequest {
   type: 'SMS' | 'Email' | 'WhatsApp' | 'GMB' | 'IG' | 'FB' | 'Custom' | 'Live_Chat';
   contactId: string;
+  locationId?: string;
   message?: string;
   subject?: string;
   emailFrom?: string;
   html?: string;
+  assignedTo?: string;
 }
 
 export interface GHLConversation {

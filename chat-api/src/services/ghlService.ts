@@ -212,10 +212,16 @@ class GHLService {
    */
   async sendMessage(data: GHLSendMessageRequest): Promise<{ messageId: string }> {
     try {
-      const response = await this.client.post('/conversations/messages', data);
+      // Asegurar que locationId esté incluido
+      const payload = {
+        ...data,
+        locationId: data.locationId || this.locationId,
+      };
+
+      const response = await this.client.post('/conversations/messages', payload);
 
       const messageId = response.data.messageId || response.data.id;
-      logger.info('[GHLService] Message sent', { messageId, contactId: data.contactId });
+      logger.info('[GHLService] Message sent', { messageId, contactId: data.contactId, locationId: payload.locationId });
 
       return { messageId };
     } catch (error: any) {
