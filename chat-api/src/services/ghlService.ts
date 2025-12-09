@@ -155,49 +155,22 @@ class GHLService {
     lastName?: string;
   }): Promise<{ contactId: string; isNew: boolean }> {
     try {
-      // Buscar contacto existente
-      let contact: GHLContact | null = null;
+      // Crear contacto directamente (GHL maneja duplicados automáticamente)
+      const created = await this.createContact({
+        firstName: data.firstName || 'Widget',
+        lastName: data.lastName || 'User',
+        email: data.email,
+        phone: data.phone,
+        tags: ['widget-chat'],
+        customFields: [
+          {
+            field: 'widget_session_id',
+            value: data.sessionId,
+          },
+        ],
+      });
 
-      if (data.phone) {
-        contact = await this.findContact({ phone: data.phone });
-      } else if (data.email) {
-        contact = await this.findContact({ email: data.email });
-      }
-
-      if (contact) {
-        // Actualizar contacto existente
-        const updated = await this.updateContact(contact.id, {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
-          customFields: [
-            {
-              field: 'widget_session_id',
-              value: data.sessionId,
-            },
-          ],
-        });
-
-        return { contactId: updated.id, isNew: false };
-      } else {
-        // Crear nuevo contacto
-        const created = await this.createContact({
-          firstName: data.firstName || 'Widget',
-          lastName: data.lastName || 'User',
-          email: data.email,
-          phone: data.phone,
-          tags: ['widget-chat'],
-          customFields: [
-            {
-              field: 'widget_session_id',
-              value: data.sessionId,
-            },
-          ],
-        });
-
-        return { contactId: created.id, isNew: true };
-      }
+      return { contactId: created.id, isNew: true };
     } catch (error: any) {
       logger.error('[GHLService] Error upserting contact', {
         data,
