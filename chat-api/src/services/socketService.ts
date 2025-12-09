@@ -200,11 +200,9 @@ class SocketService {
           if (contactId) {
             try {
               await ghlService.sendMessage({
-                type: 'Email',
+                type: 'WhatsApp',
                 contactId,
                 message,
-                subject: 'Nuevo mensaje desde el widget',
-                emailFrom: 'widget@saleads.com',
               });
 
               logger.info('[SocketService] Message sent to GHL', {

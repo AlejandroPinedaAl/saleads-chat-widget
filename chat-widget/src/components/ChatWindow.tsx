@@ -13,12 +13,12 @@ import {
 import { translations } from '@/types';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { EmailCapture } from './EmailCapture';
+import { PhoneCapture } from './PhoneCapture';
 
 export const ChatWindow: React.FC = () => {
   const isOpen = useChatStore(selectIsOpen);
   const isConnected = useChatStore(selectIsConnected);
-  const emailCaptured = useChatStore((state) => state.emailCaptured);
+  const phoneCaptured = useChatStore((state) => state.phoneCaptured);
   const config = useChatStore(selectConfig);
   const setIsOpen = useChatStore((state) => state.setIsOpen);
 
@@ -95,9 +95,9 @@ export const ChatWindow: React.FC = () => {
         </div>
       </div>
 
-      {/* Body - Captura de email o chat */}
-      {!emailCaptured ? (
-        <EmailCapture />
+      {/* Body - Captura de teléfono o chat */}
+      {!phoneCaptured ? (
+        <PhoneCapture />
       ) : (
         <>
           {/* Lista de mensajes */}

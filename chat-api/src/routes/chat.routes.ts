@@ -84,11 +84,9 @@ router.post(
     if (contactId) {
       try {
         await ghlService.sendMessage({
-          type: 'Email',
+          type: 'WhatsApp',
           contactId,
           message: data.message,
-          subject: 'Nuevo mensaje desde el widget',
-          emailFrom: 'widget@saleads.com',
         });
 
         logger.info('[ChatRoutes] Message sent to GHL', {
