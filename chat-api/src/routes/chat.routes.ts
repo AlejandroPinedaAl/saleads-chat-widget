@@ -10,6 +10,7 @@ import { chatMessageRateLimiter, sessionRateLimiter } from '../middleware/rateLi
 import { socketService } from '../services/socketService.js';
 import { redisService } from '../services/redisService.js';
 import { ghlService } from '../services/ghlService.js';
+import { n8nService } from '../services/n8nService.js';
 import { logger } from '../utils/logger.js';
 import { validate, userMessageSchema, n8nWebhookSchema } from '../utils/validators.js';
 import type { N8NWebhookRequest } from '../types/index.js';
@@ -80,43 +81,74 @@ router.post(
       }
     }
 
-    // Enviar mensaje a GoHighLevel
+    // Actualizar teléfono del contacto si está disponible
+    if (contactId && data.metadata?.phone) {
+      try {
+        await ghlService.updateContact(contactId, {
+          phone: data.metadata.phone,
+        });
+        logger.info('[ChatRoutes] Contact phone updated', {
+          contactId,
+          phone: data.metadata.phone,
+        });
+      } catch (updateError: any) {
+        logger.warn('[ChatRoutes] Could not update contact phone', {
+          contactId,
+          error: updateError.message,
+        });
+      }
+    }
+
+    // ========== NUEVO FLUJO: BYPASS A N8N DIRECTO ==========
+    let n8nMessageId: string | undefined;
+
+    if (n8nService.isEnabled()) {
+      try {
+        const n8nResult = await n8nService.sendMessage({
+          sessionId: data.sessionId,
+          message: data.message,
+          contactId: contactId || undefined,
+          phone: data.metadata?.phone,
+          email: data.metadata?.email,
+          firstName: data.metadata?.firstName,
+          lastName: data.metadata?.lastName,
+          metadata: {
+            ...data.metadata,
+            timestamp: new Date().toISOString(),
+          },
+        });
+
+        if (n8nResult.success) {
+          n8nMessageId = n8nResult.messageId;
+          logger.info('[ChatRoutes] Message sent to n8n directly', {
+            sessionId: data.sessionId,
+            contactId,
+            messageId: n8nMessageId,
+          });
+        } else {
+          logger.warn('[ChatRoutes] n8n returned error', {
+            sessionId: data.sessionId,
+            error: n8nResult.error,
+          });
+        }
+      } catch (error: any) {
+        logger.error('[ChatRoutes] Error sending message to n8n', {
+          sessionId: data.sessionId,
+          error: error.message,
+        });
+      }
+    } else {
+      logger.warn('[ChatRoutes] n8n service not enabled', {
+        sessionId: data.sessionId,
+      });
+    }
+
+    // Guardar mensaje en notas de GHL (historial)
     if (contactId) {
       try {
-        // Para WhatsApp, asegurar que el contacto tenga teléfono
-        // Si tenemos teléfono en metadata, actualizar el contacto antes de enviar
-        if (data.metadata?.phone) {
-          try {
-            await ghlService.updateContact(contactId, {
-              phone: data.metadata.phone,
-            });
-            logger.info('[ChatRoutes] Contact phone updated', {
-              contactId,
-              phone: data.metadata.phone,
-            });
-          } catch (updateError: any) {
-            logger.warn('[ChatRoutes] Could not update contact phone', {
-              contactId,
-              error: updateError.message,
-            });
-            // Continuar intentando enviar el mensaje
-          }
-        }
-
-        await ghlService.sendMessage({
-          type: 'WhatsApp',
-          contactId,
-          message: data.message,
-        });
-
-        logger.info('[ChatRoutes] Message sent to GHL', {
-          sessionId: data.sessionId,
-          contactId,
-        });
+        await ghlService.logWidgetMessage(contactId, data.message, 'inbound');
       } catch (error: any) {
-        logger.error('[ChatRoutes] Error sending message to GHL', {
-          sessionId: data.sessionId,
-          contactId,
+        logger.warn('[ChatRoutes] Could not log message to GHL', {
           error: error.message,
         });
       }
@@ -131,9 +163,10 @@ router.post(
     res.json({
       success: true,
       data: {
-        messageId: `msg_${Date.now()}`,
+        messageId: n8nMessageId || `msg_${Date.now()}`,
         sessionId: data.sessionId,
         contactId,
+        n8nEnabled: n8nService.isEnabled(),
       },
       timestamp: new Date().toISOString(),
     });
@@ -192,11 +225,28 @@ router.post(
       },
     });
 
+    // Guardar respuesta del agente en notas de GHL (historial)
+    const contactId = session.contactId || data.metadata?.contactId;
+    if (contactId) {
+      try {
+        await ghlService.logWidgetMessage(contactId, data.response, 'outbound');
+        logger.debug('[ChatRoutes] Agent response logged to GHL', {
+          sessionId: data.sessionId,
+          contactId,
+        });
+      } catch (error: any) {
+        logger.warn('[ChatRoutes] Could not log agent response to GHL', {
+          error: error.message,
+        });
+      }
+    }
+
     res.json({
       success: true,
       data: {
         received: true,
         sessionId: data.sessionId,
+        contactId,
       },
       timestamp: new Date().toISOString(),
     });

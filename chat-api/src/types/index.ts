@@ -190,6 +190,13 @@ export interface AppConfig {
     locationId: string;
     apiUrl: string;
   };
+
+  n8n: {
+    webhookUrl: string;
+    webhookSecret: string;
+    enabled: boolean;
+    timeout: number;
+  };
   
   redis: {
     url: string;

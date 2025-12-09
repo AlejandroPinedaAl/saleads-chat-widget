@@ -9,6 +9,7 @@ import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
 import { redisService } from './redisService.js';
 import { ghlService } from './ghlService.js';
+import { n8nService } from './n8nService.js';
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -196,43 +197,78 @@ class SocketService {
             }
           }
 
-          // Enviar mensaje a GoHighLevel
-          if (contactId) {
+          // Actualizar teléfono del contacto si está disponible
+          if (contactId && metadata?.phone) {
             try {
-              // Para WhatsApp, asegurar que el contacto tenga teléfono
-              // Si tenemos teléfono en metadata, actualizar el contacto antes de enviar
-              if (metadata?.phone) {
-                try {
-                  await ghlService.updateContact(contactId, {
-                    phone: metadata.phone,
-                  });
-                  logger.info('[SocketService] Contact phone updated', {
-                    contactId,
-                    phone: metadata.phone,
-                  });
-                } catch (updateError: any) {
-                  logger.warn('[SocketService] Could not update contact phone', {
-                    contactId,
-                    error: updateError.message,
-                  });
-                  // Continuar intentando enviar el mensaje
-                }
-              }
-
-              await ghlService.sendMessage({
-                type: 'WhatsApp',
+              await ghlService.updateContact(contactId, {
+                phone: metadata.phone,
+              });
+              logger.info('[SocketService] Contact phone updated', {
                 contactId,
+                phone: metadata.phone,
+              });
+            } catch (updateError: any) {
+              logger.warn('[SocketService] Could not update contact phone', {
+                contactId,
+                error: updateError.message,
+              });
+            }
+          }
+
+          // ========== NUEVO FLUJO: BYPASS A N8N DIRECTO ==========
+          // Enviar mensaje directamente a n8n (sin pasar por canal de mensajes de GHL)
+          if (n8nService.isEnabled()) {
+            try {
+              const n8nResult = await n8nService.sendMessage({
+                sessionId,
                 message,
+                contactId: contactId || undefined,
+                phone: metadata?.phone,
+                email: metadata?.email,
+                firstName: metadata?.firstName,
+                lastName: metadata?.lastName,
+                metadata: {
+                  ...metadata,
+                  timestamp: new Date().toISOString(),
+                },
               });
 
-              logger.info('[SocketService] Message sent to GHL', {
+              if (n8nResult.success) {
+                logger.info('[SocketService] Message sent to n8n directly', {
+                  sessionId,
+                  contactId,
+                  messageId: n8nResult.messageId,
+                });
+              } else {
+                logger.warn('[SocketService] n8n returned error', {
+                  sessionId,
+                  error: n8nResult.error,
+                });
+              }
+            } catch (error: any) {
+              logger.error('[SocketService] Error sending message to n8n', {
+                sessionId,
+                error: error.message,
+              });
+            }
+          } else {
+            logger.warn('[SocketService] n8n service not enabled, message not sent to AI', {
+              sessionId,
+            });
+          }
+
+          // Guardar mensaje del usuario en notas de GHL (historial)
+          if (contactId) {
+            try {
+              await ghlService.logWidgetMessage(contactId, message, 'inbound');
+              logger.debug('[SocketService] Message logged to GHL notes', {
                 sessionId,
                 contactId,
               });
             } catch (error: any) {
-              logger.error('[SocketService] Error sending message to GHL', {
+              // No bloquear el flujo si falla el log
+              logger.warn('[SocketService] Could not log message to GHL', {
                 sessionId,
-                contactId,
                 error: error.message,
               });
             }
@@ -244,7 +280,7 @@ class SocketService {
           // Emitir indicador de "agente escribiendo"
           this.emitAgentTyping(sessionId);
 
-          // Nota: La respuesta del agente llegará vía webhook de n8n
+          // La respuesta del agente llegará vía webhook de n8n
           // y será emitida por el endpoint /api/webhook/n8n-response
         } catch (error: any) {
           logger.error('[SocketService] Error processing user message', {

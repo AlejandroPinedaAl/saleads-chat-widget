@@ -280,6 +280,46 @@ class GHLService {
   }
 
   /**
+   * Agregar nota a un contacto (para guardar historial del chat)
+   */
+  async addContactNote(contactId: string, body: string): Promise<{ noteId: string } | null> {
+    try {
+      const response = await this.client.post(`/contacts/${contactId}/notes`, {
+        body,
+        userId: null, // null = nota del sistema
+      });
+
+      const noteId = response.data.id || response.data.noteId;
+      logger.info('[GHLService] Note added to contact', { contactId, noteId });
+
+      return { noteId };
+    } catch (error: any) {
+      logger.error('[GHLService] Error adding note to contact', {
+        contactId,
+        error: error.response?.data || error.message,
+        status: error.response?.status,
+      });
+      // No lanzar error, es una operación secundaria
+      return null;
+    }
+  }
+
+  /**
+   * Agregar mensaje del widget al historial del contacto
+   */
+  async logWidgetMessage(contactId: string, message: string, direction: 'inbound' | 'outbound'): Promise<void> {
+    const prefix = direction === 'inbound' ? '👤 Usuario' : '🤖 Agente';
+    const timestamp = new Date().toLocaleString('es-ES', { 
+      timeZone: 'America/Mexico_City',
+      dateStyle: 'short',
+      timeStyle: 'short'
+    });
+    const noteBody = `[Widget Chat - ${timestamp}]\n${prefix}: ${message}`;
+    
+    await this.addContactNote(contactId, noteBody);
+  }
+
+  /**
    * Health check
    */
   async healthCheck(): Promise<boolean> {
