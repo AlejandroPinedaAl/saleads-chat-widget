@@ -200,7 +200,7 @@ class SocketService {
           if (contactId) {
             try {
               await ghlService.sendMessage({
-                type: 'Live_Chat',
+                type: 'Custom',
                 contactId,
                 message,
               });

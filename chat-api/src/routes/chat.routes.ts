@@ -84,7 +84,7 @@ router.post(
     if (contactId) {
       try {
         await ghlService.sendMessage({
-          type: 'Live_Chat',
+          type: 'Custom',
           contactId,
           message: data.message,
         });
