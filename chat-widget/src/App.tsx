@@ -8,14 +8,13 @@ import { useChatStore } from '@/store/chatStore';
 import { socketService } from '@/services/socketService';
 import { ChatButton } from '@/components/ChatButton';
 import { ChatWindow } from '@/components/ChatWindow';
-import type { WindowWithWidget, WidgetConfig } from '@/types';
+import type { WindowWithWidget, WidgetConfig, WidgetPosition, WidgetLanguage } from '@/types';
 
 // Extender window
 declare const window: WindowWithWidget;
 
 export const App: React.FC = () => {
   const sessionId = useChatStore((state) => state.sessionId);
-  const config = useChatStore((state) => state.config);
   const setConfig = useChatStore((state) => state.setConfig);
   const setIsConnected = useChatStore((state) => state.setIsConnected);
   const setAgentTyping = useChatStore((state) => state.setAgentTyping);
@@ -33,9 +32,9 @@ export const App: React.FC = () => {
     // Merge con configuración por defecto
     const finalConfig: WidgetConfig = {
       apiUrl: windowConfig.apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:3000',
-      position: windowConfig.position || import.meta.env.VITE_DEFAULT_POSITION || 'bottom-right',
+      position: (windowConfig.position || import.meta.env.VITE_DEFAULT_POSITION || 'bottom-right') as WidgetPosition,
       primaryColor: windowConfig.primaryColor || import.meta.env.VITE_DEFAULT_PRIMARY_COLOR || '#3B82F6',
-      language: windowConfig.language || import.meta.env.VITE_DEFAULT_LANGUAGE || 'es',
+      language: (windowConfig.language || import.meta.env.VITE_DEFAULT_LANGUAGE || 'es') as WidgetLanguage,
       theme: windowConfig.theme || 'light',
       agentName: windowConfig.agentName || 'SaleAds',
       greeting: windowConfig.greeting,

@@ -7,7 +7,6 @@ import type { AgentResponseData, ErrorData } from '@/types';
 
 export class SocketService {
   private socket: Socket | null = null;
-  private apiUrl: string = '';
   private sessionId: string = '';
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
@@ -22,7 +21,6 @@ export class SocketService {
       return;
     }
 
-    this.apiUrl = apiUrl;
     this.sessionId = sessionId;
 
     console.log('[SocketService] Connecting to:', apiUrl);

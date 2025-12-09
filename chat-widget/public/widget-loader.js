@@ -18,15 +18,19 @@
 
   // Configuración por defecto
   const DEFAULT_CONFIG = {
-    apiUrl: 'https://api-chat.saleads.com', // Cambiar a tu dominio de Railway
+    apiUrl: 'http://95.216.196.74:8080', // IP del servidor Hetzner con Nginx
     position: 'bottom-right',
     primaryColor: '#3B82F6',
     language: 'es',
   };
 
-  // URLs de los assets (cambiar a tu CDN)
-  const WIDGET_JS_URL = 'https://cdn.saleads.com/widget.js';
-  const WIDGET_CSS_URL = 'https://cdn.saleads.com/widget.css';
+  // URLs de los assets (ajustar según tu deployment)
+  // Para desarrollo: usar rutas relativas o IP del servidor
+  const currentScript = document.currentScript;
+  const baseUrl = currentScript ? currentScript.src.replace('/widget-loader.js', '') : window.location.origin;
+  
+  const WIDGET_JS_URL = `${baseUrl}/widget.js`;
+  const WIDGET_CSS_URL = `${baseUrl}/widget.css`;
 
   // Merge configuración del usuario con defaults
   window.saleadsConfig = Object.assign({}, DEFAULT_CONFIG, window.saleadsConfig || {});
