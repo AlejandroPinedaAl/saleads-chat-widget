@@ -29,12 +29,12 @@ export const App: React.FC = () => {
     // Obtener configuración del window
     const windowConfig = window.saleadsConfig || {};
 
-    // Merge con configuración por defecto
+    // Merge con configuración por defecto (no usar import.meta.env en build IIFE)
     const finalConfig: WidgetConfig = {
-      apiUrl: windowConfig.apiUrl || import.meta.env.VITE_API_URL || 'http://localhost:3000',
-      position: (windowConfig.position || import.meta.env.VITE_DEFAULT_POSITION || 'bottom-right') as WidgetPosition,
-      primaryColor: windowConfig.primaryColor || import.meta.env.VITE_DEFAULT_PRIMARY_COLOR || '#3B82F6',
-      language: (windowConfig.language || import.meta.env.VITE_DEFAULT_LANGUAGE || 'es') as WidgetLanguage,
+      apiUrl: windowConfig.apiUrl || 'http://localhost:3000',
+      position: (windowConfig.position || 'bottom-right') as WidgetPosition,
+      primaryColor: windowConfig.primaryColor || '#3B82F6',
+      language: (windowConfig.language || 'es') as WidgetLanguage,
       theme: windowConfig.theme || 'light',
       agentName: windowConfig.agentName || 'SaleAds',
       greeting: windowConfig.greeting,

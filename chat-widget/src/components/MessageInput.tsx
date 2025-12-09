@@ -15,6 +15,7 @@ export const MessageInput: React.FC = () => {
 
   const config = useChatStore(selectConfig);
   const isConnected = useChatStore(selectIsConnected);
+  const userEmail = useChatStore((state) => state.userEmail);
   const addMessage = useChatStore((state) => state.addMessage);
   const updateMessageStatus = useChatStore((state) => state.updateMessageStatus);
 
@@ -61,8 +62,10 @@ export const MessageInput: React.FC = () => {
     setInputValue('');
 
     try {
-      // Enviar mensaje vía Socket.io
-      socketService.sendMessage(message);
+      // Enviar mensaje vía Socket.io con metadata incluyendo email
+      socketService.sendMessage(message, {
+        email: userEmail,
+      });
 
       // Actualizar estado a "sent"
       // Nota: El ID se genera en el store, necesitamos obtener el último mensaje

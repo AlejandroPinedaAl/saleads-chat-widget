@@ -31,6 +31,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
   isMinimized: false,
   isConnected: false,
   isAgentTyping: false,
+  userEmail: localStorage.getItem('saleads_user_email') || null,
+  emailCaptured: !!localStorage.getItem('saleads_user_email'),
   messages: [],
   unreadCount: 0,
   sessionId: getOrCreateSessionId(),
@@ -84,6 +86,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
    */
   setAgentTyping: (typing: boolean) => {
     set({ isAgentTyping: typing });
+  },
+
+  /**
+   * Guardar email del usuario
+   */
+  setUserEmail: (email: string) => {
+    localStorage.setItem('saleads_user_email', email);
+    set({ userEmail: email, emailCaptured: true });
   },
 
   /**

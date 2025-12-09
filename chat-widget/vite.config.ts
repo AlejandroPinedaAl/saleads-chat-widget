@@ -10,6 +10,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  define: {
+    // Definir process como objeto vacío para evitar errores en el navegador
+    'process.env': '{}',
+    'process': '{}',
+  },
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/main.tsx'),
@@ -33,7 +38,7 @@ export default defineConfig({
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remover console.logs en producción
+        drop_console: false, // Mantener console.logs para debugging
         drop_debugger: true,
       },
     },

@@ -110,6 +110,8 @@ export interface ChatState {
   isMinimized: boolean;
   isConnected: boolean;
   isAgentTyping: boolean;
+  userEmail: string | null;
+  emailCaptured: boolean;
 
   // Data
   messages: Message[];
@@ -124,6 +126,7 @@ export interface ChatState {
   setIsMinimized: (minimized: boolean) => void;
   setIsConnected: (connected: boolean) => void;
   setAgentTyping: (typing: boolean) => void;
+  setUserEmail: (email: string) => void;
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   updateMessageStatus: (messageId: string, status: MessageStatus) => void;
   markAsRead: () => void;
