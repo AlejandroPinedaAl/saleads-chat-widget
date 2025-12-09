@@ -189,7 +189,7 @@ router.post(
  */
 router.get(
   '/health',
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (_req: Request, res: Response) => {
     const startTime = Date.now();
 
     // Verificar servicios

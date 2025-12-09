@@ -14,7 +14,7 @@ export function errorHandler(
   error: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void {
   // Log del error
   logger.error('[ErrorHandler] Error caught', {

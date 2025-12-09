@@ -17,6 +17,10 @@ export const userMessageSchema = z.object({
       userAgent: z.string().optional(),
       pageUrl: z.string().url().optional(),
       timestamp: z.string().optional(),
+      phone: z.string().optional(),
+      email: z.string().email().optional(),
+      firstName: z.string().optional(),
+      lastName: z.string().optional(),
     })
     .passthrough()
     .optional(),

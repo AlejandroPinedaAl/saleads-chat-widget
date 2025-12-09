@@ -93,7 +93,7 @@ export function createApp(): Express {
   // ============================================
 
   // Root endpoint
-  app.get('/', (req, res) => {
+  app.get('/', (_req, res) => {
     res.json({
       name: 'SaleAds Chat API',
       version: '1.0.0',

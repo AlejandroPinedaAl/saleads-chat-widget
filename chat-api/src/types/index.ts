@@ -10,7 +10,7 @@ export interface ServerToClientEvents {
   'agent-response': (data: AgentResponseData) => void;
   'agent-typing': () => void;
   'connection-status': (connected: boolean) => void;
-  'error': (error: ErrorResponse) => void;
+  'error': (error: { code: string; message: string }) => void;
 }
 
 export interface ClientToServerEvents {
