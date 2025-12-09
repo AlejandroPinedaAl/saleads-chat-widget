@@ -76,7 +76,10 @@ export interface GHLCreateContactRequest {
   email?: string;
   phone?: string;
   tags?: string[];
-  customFields?: Record<string, any>;
+  customFields?: Array<{
+    field: string;
+    value: string;
+  }>;
 }
 
 export interface GHLSendMessageRequest {

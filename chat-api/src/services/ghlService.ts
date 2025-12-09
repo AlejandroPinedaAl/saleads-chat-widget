@@ -171,9 +171,12 @@ class GHLService {
           lastName: data.lastName,
           email: data.email,
           phone: data.phone,
-          customFields: {
-            widget_session_id: data.sessionId,
-          },
+          customFields: [
+            {
+              field: 'widget_session_id',
+              value: data.sessionId,
+            },
+          ],
         });
 
         return { contactId: updated.id, isNew: false };
@@ -185,9 +188,12 @@ class GHLService {
           email: data.email,
           phone: data.phone,
           tags: ['widget-chat'],
-          customFields: {
-            widget_session_id: data.sessionId,
-          },
+          customFields: [
+            {
+              field: 'widget_session_id',
+              value: data.sessionId,
+            },
+          ],
         });
 
         return { contactId: created.id, isNew: true };
