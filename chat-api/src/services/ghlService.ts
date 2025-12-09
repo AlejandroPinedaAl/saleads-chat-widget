@@ -185,11 +185,18 @@ class GHLService {
    */
   async sendMessage(data: GHLSendMessageRequest): Promise<{ messageId: string }> {
     try {
-      // Asegurar que locationId esté incluido
-      const payload = {
+      // Para tipo Email, convertir message a html
+      const payload: any = {
         ...data,
         locationId: data.locationId || this.locationId,
       };
+
+      if (payload.type === 'Email' && payload.message && !payload.html) {
+        // Convertir mensaje de texto a HTML simple
+        payload.html = `<p>${payload.message.replace(/\n/g, '<br>')}</p>`;
+        // GHL requiere html para emails, no message
+        delete payload.message;
+      }
 
       logger.debug('[GHLService] Sending message payload', { payload });
 
