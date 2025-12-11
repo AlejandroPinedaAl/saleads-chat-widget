@@ -50,10 +50,18 @@ export const config: AppConfig = {
   port: getEnvNumber('PORT', 3000),
   nodeEnv: (getEnv('NODE_ENV', 'development') as 'development' | 'production' | 'test'),
 
-  // GoHighLevel
+  // Chatwoot
+  chatwoot: {
+    apiUrl: getEnv('CHATWOOT_API_URL', ''),
+    apiKey: getEnv('CHATWOOT_API_KEY', ''),
+    accountId: getEnv('CHATWOOT_ACCOUNT_ID', ''),
+    inboxId: getEnv('CHATWOOT_INBOX_ID', ''),
+  },
+
+  // GoHighLevel (Mantener para rollback)
   ghl: {
-    apiKey: getEnv('GHL_API_KEY'),
-    locationId: getEnv('GHL_LOCATION_ID'),
+    apiKey: getEnv('GHL_API_KEY', ''),
+    locationId: getEnv('GHL_LOCATION_ID', ''),
     apiUrl: getEnv('GHL_API_URL', 'https://services.leadconnectorhq.com'),
   },
 

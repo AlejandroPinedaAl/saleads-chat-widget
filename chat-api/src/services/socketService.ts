@@ -8,7 +8,7 @@ import { Server, Socket } from 'socket.io';
 import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
 import { redisService } from './redisService.js';
-import { ghlService } from './ghlService.js';
+import { chatwootService } from './chatwootService.js';
 import { n8nService } from './n8nService.js';
 import type {
   ServerToClientEvents,
@@ -162,61 +162,91 @@ class SocketService {
             session = await redisService.getSession(sessionId);
           }
 
-          // Crear o actualizar contacto en GoHighLevel
+          // ========== NUEVO FLUJO: CHATWOOT ==========
+          // Crear o obtener contacto en Chatwoot
           let contactId = session?.contactId || '';
+          let conversationId: number | null = null;
 
-          if (!contactId) {
+          if (chatwootService.isEnabled()) {
             try {
-              const upsertResult = await ghlService.upsertContact({
-                sessionId,
-                phone: metadata?.phone,
+              // Obtener o crear contacto usando sessionId como identifier
+              const contact = await chatwootService.getOrCreateContact({
+                identifier: sessionId,
+                name: metadata?.firstName && metadata?.lastName
+                  ? `${metadata.firstName} ${metadata.lastName}`
+                  : metadata?.firstName || metadata?.lastName || 'Usuario Widget',
                 email: metadata?.email,
-                firstName: metadata?.firstName,
-                lastName: metadata?.lastName,
+                phone: metadata?.phone,
+                customAttributes: {
+                  session_id: sessionId,
+                  user_agent: metadata?.userAgent,
+                  page_url: metadata?.pageUrl,
+                },
               });
 
-              contactId = upsertResult.contactId;
+              contactId = contact.id.toString();
 
-              // Actualizar sesión con contactId
+              // Obtener o crear conversación
+              const conversation = await chatwootService.getOrCreateConversation(
+                contactId,
+                sessionId
+              );
+
+              conversationId = conversation.id;
+
+              // Actualizar sesión con contactId y conversationId
               await redisService.setSession(sessionId, {
                 ...session!,
                 contactId,
+                metadata: {
+                  ...session!.metadata,
+                  conversationId: conversationId.toString(),
+                },
               });
 
-              logger.info('[SocketService] Contact created/updated', {
+              logger.info('[SocketService] Chatwoot contact and conversation ready', {
                 sessionId,
                 contactId,
-                isNew: upsertResult.isNew,
+                conversationId,
               });
             } catch (error: any) {
-              logger.error('[SocketService] Error creating/updating contact', {
+              logger.error('[SocketService] Error with Chatwoot contact/conversation', {
                 sessionId,
                 error: error.message,
               });
-              // Continuar sin contactId (se puede crear después)
+              // Continuar sin Chatwoot (el flujo n8n seguirá funcionando)
             }
+          } else {
+            logger.warn('[SocketService] Chatwoot not enabled, skipping contact creation');
           }
 
-          // Actualizar teléfono del contacto si está disponible
-          if (contactId && metadata?.phone) {
+          // ========== GUARDAR MENSAJE EN CHATWOOT ==========
+          // Guardar mensaje del usuario en Chatwoot
+          if (chatwootService.isEnabled() && conversationId) {
             try {
-              await ghlService.updateContact(contactId, {
-                phone: metadata.phone,
+              await chatwootService.sendMessage({
+                conversationId,
+                content: message,
+                messageType: 'incoming',
+                contentType: 'text',
               });
-              logger.info('[SocketService] Contact phone updated', {
-                contactId,
-                phone: metadata.phone,
+
+              logger.info('[SocketService] User message saved to Chatwoot', {
+                sessionId,
+                conversationId,
               });
-            } catch (updateError: any) {
-              logger.warn('[SocketService] Could not update contact phone', {
-                contactId,
-                error: updateError.message,
+            } catch (error: any) {
+              logger.error('[SocketService] Error saving message to Chatwoot', {
+                sessionId,
+                conversationId,
+                error: error.message,
               });
+              // No bloquear el flujo si falla Chatwoot
             }
           }
 
-          // ========== NUEVO FLUJO: BYPASS A N8N DIRECTO ==========
-          // Enviar mensaje directamente a n8n (sin pasar por canal de mensajes de GHL)
+          // ========== ENVIAR A N8N PARA PROCESAMIENTO IA ==========
+          // Enviar mensaje directamente a n8n para procesamiento del agente IA
           if (n8nService.isEnabled()) {
             try {
               const n8nResult = await n8nService.sendMessage({
@@ -229,14 +259,16 @@ class SocketService {
                 lastName: metadata?.lastName,
                 metadata: {
                   ...metadata,
+                  conversationId: conversationId?.toString(),
                   timestamp: new Date().toISOString(),
                 },
               });
 
               if (n8nResult.success) {
-                logger.info('[SocketService] Message sent to n8n directly', {
+                logger.info('[SocketService] Message sent to n8n for AI processing', {
                   sessionId,
                   contactId,
+                  conversationId,
                   messageId: n8nResult.messageId,
                 });
               } else {
@@ -255,23 +287,6 @@ class SocketService {
             logger.warn('[SocketService] n8n service not enabled, message not sent to AI', {
               sessionId,
             });
-          }
-
-          // Guardar mensaje del usuario en notas de GHL (historial)
-          if (contactId) {
-            try {
-              await ghlService.logWidgetMessage(contactId, message, 'inbound');
-              logger.debug('[SocketService] Message logged to GHL notes', {
-                sessionId,
-                contactId,
-              });
-            } catch (error: any) {
-              // No bloquear el flujo si falla el log
-              logger.warn('[SocketService] Could not log message to GHL', {
-                sessionId,
-                error: error.message,
-              });
-            }
           }
 
           // Incrementar contador de mensajes
@@ -316,7 +331,7 @@ class SocketService {
   /**
    * Emitir respuesta del agente a una sesión específica
    */
-  emitAgentResponse(sessionId: string, data: AgentResponseData): void {
+  async emitAgentResponse(sessionId: string, data: AgentResponseData): Promise<void> {
     if (!this.io) {
       logger.error('[SocketService] Socket.io not initialized');
       return;
@@ -328,6 +343,38 @@ class SocketService {
       sessionId,
       messageLength: data.message.length,
     });
+
+    // Guardar respuesta del agente en Chatwoot
+    if (chatwootService.isEnabled() && data.metadata?.conversationId) {
+      try {
+        const conversationId = parseInt(data.metadata.conversationId as string, 10);
+        
+        if (!isNaN(conversationId)) {
+          await chatwootService.sendMessage({
+            conversationId,
+            content: data.message,
+            messageType: 'outgoing',
+            contentType: 'text',
+            contentAttributes: {
+              source: 'ai_agent',
+              sub_agent: data.metadata?.subAgent,
+              processing_time: data.metadata?.processingTime,
+            },
+          });
+
+          logger.info('[SocketService] Agent response saved to Chatwoot', {
+            sessionId,
+            conversationId,
+          });
+        }
+      } catch (error: any) {
+        logger.error('[SocketService] Error saving agent response to Chatwoot', {
+          sessionId,
+          error: error.message,
+        });
+        // No bloquear el flujo si falla Chatwoot
+      }
+    }
   }
 
   /**

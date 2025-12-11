@@ -9,11 +9,11 @@ import { validateWebhookSignature } from '../middleware/auth.js';
 import { chatMessageRateLimiter, sessionRateLimiter } from '../middleware/rateLimit.js';
 import { socketService } from '../services/socketService.js';
 import { redisService } from '../services/redisService.js';
-import { ghlService } from '../services/ghlService.js';
+import { chatwootService } from '../services/chatwootService.js';
 import { n8nService } from '../services/n8nService.js';
 import { logger } from '../utils/logger.js';
 import { validate, userMessageSchema, n8nWebhookSchema } from '../utils/validators.js';
-import type { N8NWebhookRequest } from '../types/index.js';
+import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
 
 const router = Router();
 
@@ -49,57 +49,82 @@ router.post(
       session = await redisService.getSession(data.sessionId);
     }
 
-    // Crear o actualizar contacto en GoHighLevel
+    // ========== NUEVO FLUJO: CHATWOOT ==========
+    // Crear o obtener contacto y conversación en Chatwoot
     let contactId = session?.contactId || '';
+    let conversationId: number | null = null;
 
-    if (!contactId) {
+    if (chatwootService.isEnabled()) {
       try {
-        const upsertResult = await ghlService.upsertContact({
-          sessionId: data.sessionId,
-          phone: data.metadata?.phone,
+        const contact = await chatwootService.getOrCreateContact({
+          identifier: data.sessionId,
+          name: data.metadata?.firstName && data.metadata?.lastName
+            ? `${data.metadata.firstName} ${data.metadata.lastName}`
+            : data.metadata?.firstName || data.metadata?.lastName || 'Usuario Widget',
           email: data.metadata?.email,
+          phone: data.metadata?.phone,
+          customAttributes: {
+            session_id: data.sessionId,
+            user_agent: data.metadata?.userAgent,
+            page_url: data.metadata?.pageUrl,
+          },
         });
 
-        contactId = upsertResult.contactId;
+        contactId = contact.id.toString();
 
-        // Actualizar sesión con contactId
+        const conversation = await chatwootService.getOrCreateConversation(
+          contactId,
+          data.sessionId
+        );
+
+        conversationId = conversation.id;
+
+        // Actualizar sesión con contactId y conversationId
         await redisService.setSession(data.sessionId, {
           ...session!,
           contactId,
+          metadata: {
+            ...session!.metadata,
+            conversationId: conversationId.toString(),
+          },
         });
 
-        logger.info('[ChatRoutes] Contact created/updated', {
+        logger.info('[ChatRoutes] Chatwoot contact and conversation ready', {
           sessionId: data.sessionId,
           contactId,
-          isNew: upsertResult.isNew,
+          conversationId,
         });
       } catch (error: any) {
-        logger.error('[ChatRoutes] Error creating/updating contact', {
+        logger.error('[ChatRoutes] Error with Chatwoot', {
           sessionId: data.sessionId,
           error: error.message,
         });
       }
     }
 
-    // Actualizar teléfono del contacto si está disponible
-    if (contactId && data.metadata?.phone) {
+    // ========== GUARDAR MENSAJE EN CHATWOOT ==========
+    if (chatwootService.isEnabled() && conversationId) {
       try {
-        await ghlService.updateContact(contactId, {
-          phone: data.metadata.phone,
+        await chatwootService.sendMessage({
+          conversationId,
+          content: data.message,
+          messageType: 'incoming',
+          contentType: 'text',
         });
-        logger.info('[ChatRoutes] Contact phone updated', {
-          contactId,
-          phone: data.metadata.phone,
+
+        logger.info('[ChatRoutes] User message saved to Chatwoot', {
+          sessionId: data.sessionId,
+          conversationId,
         });
-      } catch (updateError: any) {
-        logger.warn('[ChatRoutes] Could not update contact phone', {
-          contactId,
-          error: updateError.message,
+      } catch (error: any) {
+        logger.error('[ChatRoutes] Error saving message to Chatwoot', {
+          sessionId: data.sessionId,
+          error: error.message,
         });
       }
     }
 
-    // ========== NUEVO FLUJO: BYPASS A N8N DIRECTO ==========
+    // ========== ENVIAR A N8N PARA PROCESAMIENTO IA ==========
     let n8nMessageId: string | undefined;
 
     if (n8nService.isEnabled()) {
@@ -114,15 +139,17 @@ router.post(
           lastName: data.metadata?.lastName,
           metadata: {
             ...data.metadata,
+            conversationId: conversationId?.toString(),
             timestamp: new Date().toISOString(),
           },
         });
 
         if (n8nResult.success) {
           n8nMessageId = n8nResult.messageId;
-          logger.info('[ChatRoutes] Message sent to n8n directly', {
+          logger.info('[ChatRoutes] Message sent to n8n for AI processing', {
             sessionId: data.sessionId,
             contactId,
+            conversationId,
             messageId: n8nMessageId,
           });
         } else {
@@ -143,17 +170,6 @@ router.post(
       });
     }
 
-    // Guardar mensaje en notas de GHL (historial)
-    if (contactId) {
-      try {
-        await ghlService.logWidgetMessage(contactId, data.message, 'inbound');
-      } catch (error: any) {
-        logger.warn('[ChatRoutes] Could not log message to GHL', {
-          error: error.message,
-        });
-      }
-    }
-
     // Incrementar contador de mensajes
     await redisService.incrementMessageCount(data.sessionId);
 
@@ -166,6 +182,8 @@ router.post(
         messageId: n8nMessageId || `msg_${Date.now()}`,
         sessionId: data.sessionId,
         contactId,
+        conversationId,
+        chatwootEnabled: chatwootService.isEnabled(),
         n8nEnabled: n8nService.isEnabled(),
       },
       timestamp: new Date().toISOString(),
@@ -207,11 +225,14 @@ router.post(
       return;
     }
 
-    // Emitir respuesta del agente vía Socket.io
-    socketService.emitAgentResponse(data.sessionId, {
+    // Emitir respuesta del agente vía Socket.io (esto también guarda en Chatwoot)
+    await socketService.emitAgentResponse(data.sessionId, {
       message: data.response,
       timestamp: data.metadata?.timestamp || new Date().toISOString(),
-      metadata: data.metadata,
+      metadata: {
+        ...data.metadata,
+        conversationId: session.metadata?.conversationId,
+      },
     });
 
     // Actualizar sesión en Redis
@@ -225,30 +246,140 @@ router.post(
       },
     });
 
-    // Guardar respuesta del agente en notas de GHL (historial)
-    const contactId = session.contactId || data.metadata?.contactId;
-    if (contactId) {
-      try {
-        await ghlService.logWidgetMessage(contactId, data.response, 'outbound');
-        logger.debug('[ChatRoutes] Agent response logged to GHL', {
-          sessionId: data.sessionId,
-          contactId,
-        });
-      } catch (error: any) {
-        logger.warn('[ChatRoutes] Could not log agent response to GHL', {
-          error: error.message,
-        });
-      }
-    }
-
     res.json({
       success: true,
       data: {
         received: true,
         sessionId: data.sessionId,
-        contactId,
       },
       timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
+ * POST /api/webhook/chatwoot
+ * Recibir eventos de Chatwoot (respuestas manuales de agentes, cambios de estado)
+ */
+router.post(
+  '/chatwoot',
+  asyncHandler(async (req: Request, res: Response) => {
+    const payload = req.body as ChatwootWebhookPayload;
+
+    logger.info('[ChatRoutes] Chatwoot webhook received', {
+      event: payload.event,
+      conversationId: payload.conversation?.id,
+      messageId: payload.message?.id,
+    });
+
+    // Procesar solo eventos relevantes
+    if (payload.event === 'message_created') {
+      // Verificar que el mensaje es de un agente (no del bot o del usuario)
+      if (
+        payload.message &&
+        payload.sender?.type !== 'contact' &&
+        payload.message.message_type === 'outgoing' &&
+        !payload.message.private
+      ) {
+        // Es una respuesta manual de un agente humano
+        logger.info('[ChatRoutes] Manual agent response detected', {
+          messageId: payload.message.id,
+          conversationId: payload.conversation?.id,
+          senderType: payload.sender?.type,
+        });
+
+        // Buscar la sesión asociada a esta conversación
+        const conversationId = payload.conversation?.id.toString();
+        
+        if (conversationId) {
+          // Buscar sesión por conversationId en metadata
+          // Nota: Esto requeriría un índice secundario en Redis o iterar sesiones
+          // Por ahora, usamos el custom_attributes de la conversación
+          const sessionId = payload.conversation?.custom_attributes?.session_id;
+
+          if (sessionId) {
+            // Verificar que la sesión existe
+            const session = await redisService.getSession(sessionId);
+
+            if (session) {
+              // Emitir respuesta del agente manual al widget
+              await socketService.emitAgentResponse(sessionId, {
+                message: payload.message.content,
+                timestamp: new Date(payload.message.created_at * 1000).toISOString(),
+                metadata: {
+                  source: 'manual_agent',
+                  agentName: payload.sender?.name,
+                  agentId: payload.sender?.id,
+                  conversationId,
+                  messageId: payload.message.id,
+                },
+              });
+
+              // Actualizar sesión
+              await redisService.setSession(sessionId, {
+                ...session,
+                lastMessageAt: Date.now(),
+                metadata: {
+                  ...session.metadata,
+                  lastManualResponse: Date.now(),
+                  lastAgentName: payload.sender?.name,
+                },
+              });
+
+              logger.info('[ChatRoutes] Manual agent response forwarded to widget', {
+                sessionId,
+                conversationId,
+                agentName: payload.sender?.name,
+              });
+            } else {
+              logger.warn('[ChatRoutes] Session not found for manual response', {
+                sessionId,
+                conversationId,
+              });
+            }
+          } else {
+            logger.warn('[ChatRoutes] No sessionId in conversation custom_attributes', {
+              conversationId,
+            });
+          }
+        }
+      }
+    } else if (payload.event === 'conversation_status_changed') {
+      // Manejar cambios de estado (ej: resolved)
+      logger.info('[ChatRoutes] Conversation status changed', {
+        conversationId: payload.conversation?.id,
+        status: payload.conversation?.status,
+      });
+
+      const sessionId = payload.conversation?.custom_attributes?.session_id;
+
+      if (sessionId) {
+        const session = await redisService.getSession(sessionId);
+
+        if (session) {
+          // Actualizar metadata de la sesión
+          await redisService.setSession(sessionId, {
+            ...session,
+            metadata: {
+              ...session.metadata,
+              conversationStatus: payload.conversation?.status,
+              statusChangedAt: Date.now(),
+            },
+          });
+
+          logger.info('[ChatRoutes] Session updated with conversation status', {
+            sessionId,
+            status: payload.conversation?.status,
+          });
+        }
+      }
+    }
+
+    // Responder a Chatwoot
+    res.json({
+      success: true,
+      received: true,
+      event: payload.event,
     });
   })
 );
@@ -263,13 +394,13 @@ router.get(
     const startTime = Date.now();
 
     // Verificar servicios
-    const [redisHealthy, ghlHealthy, socketHealthy] = await Promise.all([
+    const [redisHealthy, chatwootHealthy, socketHealthy] = await Promise.all([
       redisService.healthCheck(),
-      ghlService.healthCheck(),
+      chatwootService.healthCheck(),
       Promise.resolve(socketService.healthCheck()),
     ]);
 
-    const allHealthy = redisHealthy && ghlHealthy && socketHealthy;
+    const allHealthy = redisHealthy && chatwootHealthy && socketHealthy;
     const status = allHealthy ? 'ok' : 'degraded';
 
     const responseTime = Date.now() - startTime;
@@ -278,8 +409,9 @@ router.get(
       status,
       services: {
         redis: redisHealthy ? 'connected' : 'disconnected',
-        ghl: ghlHealthy ? 'connected' : 'disconnected',
+        chatwoot: chatwootHealthy ? 'connected' : 'disconnected',
         socket: socketHealthy ? 'running' : 'stopped',
+        n8n: n8nService.isEnabled() ? 'enabled' : 'disabled',
       },
       metrics: {
         connectedClients: socketService.getConnectedClientsCount(),

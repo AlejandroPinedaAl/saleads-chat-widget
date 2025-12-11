@@ -54,7 +54,89 @@ export interface AgentResponseData {
 }
 
 // ============================================
-// GOHIGHLEVEL TYPES
+// CHATWOOT TYPES
+// ============================================
+
+export interface ChatwootContact {
+  id: number;
+  name: string;
+  email?: string;
+  phone_number?: string;
+  identifier?: string;
+  custom_attributes?: Record<string, any>;
+  created_at?: string;
+  last_activity_at?: string;
+}
+
+export interface ChatwootCreateContactRequest {
+  name?: string;
+  email?: string;
+  phone?: string;
+  identifier: string; // sessionId como identificador único
+  customAttributes?: Record<string, any>;
+}
+
+export interface ChatwootConversation {
+  id: number;
+  account_id: number;
+  inbox_id: number;
+  contact_id?: number;
+  status: 'open' | 'resolved' | 'pending';
+  messages?: ChatwootMessage[];
+  custom_attributes?: Record<string, any>;
+  created_at?: string;
+  timestamp?: number;
+}
+
+export interface ChatwootCreateConversationRequest {
+  contactId: string;
+  sourceId?: string;
+  status?: 'open' | 'resolved' | 'pending';
+  customAttributes?: Record<string, any>;
+}
+
+export interface ChatwootMessage {
+  id: number;
+  content: string;
+  message_type: 'incoming' | 'outgoing';
+  content_type?: 'text' | 'input_select' | 'cards' | 'form' | 'article';
+  content_attributes?: Record<string, any>;
+  created_at: number;
+  private: boolean;
+  sender?: {
+    id: number;
+    name: string;
+    type: 'agent_bot' | 'user' | 'contact';
+  };
+  conversation_id: number;
+}
+
+export interface ChatwootSendMessageRequest {
+  conversationId: number;
+  content: string;
+  messageType?: 'incoming' | 'outgoing';
+  contentType?: 'text' | 'input_select' | 'cards' | 'form' | 'article';
+  contentAttributes?: Record<string, any>;
+  private?: boolean;
+}
+
+export interface ChatwootWebhookPayload {
+  event: 'message_created' | 'message_updated' | 'conversation_created' | 'conversation_updated' | 'conversation_status_changed';
+  account?: {
+    id: number;
+    name: string;
+  };
+  conversation?: ChatwootConversation;
+  message?: ChatwootMessage;
+  sender?: {
+    id: number;
+    name: string;
+    type: 'agent_bot' | 'user' | 'contact';
+  };
+}
+
+// ============================================
+// GOHIGHLEVEL TYPES (MANTENER PARA ROLLBACK)
 // ============================================
 
 export interface GHLContact {
@@ -184,6 +266,13 @@ export interface RateLimitInfo {
 export interface AppConfig {
   port: number;
   nodeEnv: 'development' | 'production' | 'test';
+  
+  chatwoot: {
+    apiUrl: string;
+    apiKey: string;
+    accountId: string;
+    inboxId: string;
+  };
   
   ghl: {
     apiKey: string;
