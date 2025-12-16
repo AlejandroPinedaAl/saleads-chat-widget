@@ -14,7 +14,6 @@ import { n8nService } from '../services/n8nService.js';
 import { logger } from '../utils/logger.js';
 import { validate, userMessageSchema, n8nWebhookSchema } from '../utils/validators.js';
 import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
-import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
 import { upload } from '../config/multer.js';
 import { config } from '../config/index.js';
 
