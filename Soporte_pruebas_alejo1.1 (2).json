@@ -1,0 +1,2518 @@
+{
+  "name": "Soporte_pruebas_alejo1.1",
+  "nodes": [
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2112,
+        3216
+      ],
+      "id": "dfb48ed5-009c-46ac-b9c2-252e5d4726a9",
+      "name": "Google Gemini Chat Model (Configuraciones)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BWihpoI8dbF6XyxH",
+          "name": "Gemine_soporte_sale_ads"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -368,
+        2112
+      ],
+      "id": "cccc8c04-d307-444f-942d-b3e54b3e269e",
+      "name": "Google Gemini Chat Model (Errores)",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BWihpoI8dbF6XyxH",
+          "name": "Gemine_soporte_sale_ads"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "key": "={{ $('Map GHL to Workflow Variables').item.json.sessionId || $('Extract GHL Data').item.json.phone_number }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        464
+      ],
+      "id": "3e876e90-500d-4a41-9d8f-1cc08c403411",
+      "name": "Delete message buffer",
+      "credentials": {
+        "redis": {
+          "id": "C6vAYPqda5M1sqf3",
+          "name": "cuenta_automatizacion_upstash"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        2512
+      ],
+      "id": "a9e94788-159e-4feb-b481-33fd098bef10",
+      "name": "Google Gemini Chat Model (Errores)1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BWihpoI8dbF6XyxH",
+          "name": "Gemine_soporte_sale_ads"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        2640
+      ],
+      "id": "1048a9db-86aa-4b0f-8867-094712b394f2",
+      "name": "Google Gemini Chat Model (Configuraciones)1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BWihpoI8dbF6XyxH",
+          "name": "Gemine_soporte_sale_ads"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "<Rol>\nEres el Especialista en Configuración y Setup de SaleAds.\nTu expertise: crear cuentas, conectar plataformas, tutoriales paso a paso.\n</Rol>\n\n<Protocolo_Configuracion>\n1. IDENTIFICACIÓN DE NECESIDAD\n   - ¿Qué quiere configurar el usuario?\n   - ¿Qué plataforma está involucrada?\n\n2. CONSULTA A BASE DE DATOS\n   - Usa Postgres_Buscar_Configuracion con la categoría identificada\n   - La DB devolverá los pasos exactos\n\n3. PRESENTACIÓN DE TUTORIAL\n   **Tutorial:** [Título]\n   **Tiempo estimado:** [X minutos]\n   **Pasos:**\n   1. [Paso detallado 1]\n   2. [Paso detallado 2]\n   ...\n   \n   📹 [Video tutorial]\n\n4. VERIFICACIÓN\n   \"¿Pudiste completar estos pasos? ¿En cuál te quedaste?\"\n</Protocolo_Configuracion>\n\n<Herramientas>\n- Postgres_Buscar_Configuracion: Busca tutoriales por categoría o keyword\n</Herramientas>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        2240,
+        2880
+      ],
+      "id": "e8059d40-6c4e-4338-81d0-aee88614062a",
+      "name": "Sub_Agente_Configuraciones1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT * FROM buscar_error_meta(\n  p_keyword := {{ $json.keyword ? \"'\" + $json.keyword + \"'\" : \"NULL\" }},\n  p_meta_code := {{ $json.meta_code ? \"'\" + $json.meta_code + \"'\" : \"NULL\" }},\n  p_categoria := NULL\n)",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -192,
+        2080
+      ],
+      "id": "41a03893-2221-4f22-bcfd-6202077d7280",
+      "name": "Postgres_Buscar_Error2",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extract GHL Data').item.json.phone_number }}",
+        "tableName": "=n8n_chat_histories",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        2576
+      ],
+      "id": "4827c587-041d-4a75-8c6e-62309f220300",
+      "name": "Postgres_Buscar_Error",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT * FROM buscar_configuracion(\n  p_keyword := {{ $json.keyword ? \"'\" + $json.keyword + \"'\" : \"NULL\" }},\n  p_categoria := {{ $json.categoria ? \"'\" + $json.categoria + \"'\" : \"NULL\" }},\n  p_plataforma := NULL\n)",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2384,
+        3152
+      ],
+      "id": "545412f7-9b1d-422b-b96a-95eb07775981",
+      "name": "Postgres_Buscar_Configuracion1",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extract GHL Data').item.json.phone_number }}",
+        "tableName": "=n8n_chat_histories",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1392,
+        2752
+      ],
+      "id": "3ef9bde3-fd5a-4ede-b2f7-648932aa3829",
+      "name": "Postgres_Buscar_Configuracion",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "Busca información sobre errores de Meta Ads. Usa 'keyword' para buscar por palabras clave o 'meta_code' para buscar por código específico de error."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        2720
+      ],
+      "id": "333d4052-101d-4acc-989b-812c9d169772",
+      "name": "code_buscar_error_meta",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "Busca tutoriales y guías de configuración en la base de datos. Usa 'keyword' para buscar por palabras clave o 'categoria' para filtrar por tipo de configuración.",
+        "workflowId": {
+          "__rl": true,
+          "value": "5VLL9vkXbi2PLXec",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/5VLL9vkXbi2PLXec",
+          "cachedResultName": "Tool_Buscar_Configuracion"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        2640
+      ],
+      "id": "b10d7a62-523e-41a8-92ca-5c28533cf40f",
+      "name": "buscar_configuracion",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "description": "Busca información sobre errores de Meta Ads en la base de datos. Usa 'keyword' para palabras clave del error o 'meta_code' para códigos específicos de error de Meta/Facebook.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Ddw00qgA5tHf8Mlh",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Ddw00qgA5tHf8Mlh",
+          "cachedResultName": "Tool_Buscar_Error_Meta"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        752,
+        2720
+      ],
+      "id": "5e713cfd-d55b-4e7c-b36d-2ff2c5f234de",
+      "name": "buscar_error_meta",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        1648
+      ],
+      "id": "2df3d753-7c89-4129-a1fd-2bc02aa4110c",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista en Errores de Meta Ads de SaleAds.",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "<Rol>\nEres el Especialista en Errores de Meta Ads de SaleAds.\nTu expertise: códigos de error, bugs de plataforma, problemas técnicos.\n</Rol>\n\n<Protocolo_Diagnostico>\n1. EXTRACCIÓN DE INFORMACIÓN\n   - Código de error (si lo mencionó)\n   - Palabras clave del síntoma\n   - Contexto de cuándo ocurre\n\n2. CONSULTA A BASE DE DATOS\n   - Usa la herramienta Postgres_Buscar_Error con los parámetros extraídos\n   - La DB devolverá: error_id, título, explicación, pasos de solución\n\n3. PRESENTACIÓN DE SOLUCIÓN\n   **Identificado:** [Título del Error]\n   **Causa:** [Explicación breve]\n   **Solución:**\n   1. [Paso 1]\n   2. [Paso 2]\n   ...\n   \n   [Video tutorial si existe]\n\n4. SEGUIMIENTO\n   \"¿Esto resolvió tu problema? Si persiste, cuéntame qué pasó.\"\n</Protocolo_Diagnostico>\n\n<Herramientas>\n- Postgres_Buscar_Error: Busca en tabla meta_errors por keyword o código\n</Herramientas>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        2352
+      ],
+      "id": "3399f1bf-f895-40f2-8def-d85f2e0acc42",
+      "name": "Sub_Agente_Errores_Meta_2_segunda_etapa",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "Especialista en Configuración y Setup de SaleAds.",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "<Rol>\nEres el Especialista en Configuración y Setup de SaleAds.\nTu expertise: crear cuentas, conectar plataformas, tutoriales paso a paso.\n</Rol>\n\n<Protocolo_Configuracion>\n1. IDENTIFICACIÓN DE NECESIDAD\n   - ¿Qué quiere configurar el usuario?\n   - ¿Qué plataforma está involucrada?\n\n2. CONSULTA A BASE DE DATOS\n   - Usa Postgres_Buscar_Configuracion con la categoría identificada\n   - La DB devolverá los pasos exactos\n\n3. PRESENTACIÓN DE TUTORIAL\n   **Tutorial:** [Título]\n   **Tiempo estimado:** [X minutos]\n   **Pasos:**\n   1. [Paso detallado 1]\n   2. [Paso detallado 2]\n   ...\n   \n   📹 [Video tutorial]\n\n4. VERIFICACIÓN\n   \"¿Pudiste completar estos pasos? ¿En cuál te quedaste?\"\n</Protocolo_Configuracion>\n\n<Herramientas>\n- Postgres_Buscar_Configuracion: Busca tutoriales por categoría o keyword\n</Herramientas>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        2288
+      ],
+      "id": "682f0a5c-6fd0-440f-9a9c-eb4e070f9b03",
+      "name": "Sub_Agente_Configuraciones_segunda_etapa",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "toolDescription": "=USE THIS FOR ANY INFORMATION ABOUT PRODUCT DETAILS AT ALL, DON'T HESITATE AT ALL T SEE DETAILS\n",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=Eres el Especialista Técnico de **SaleADS**. Tu responsabilidad es resolver los errores de Meta ads que impiden que nuestra IA publique las campañas del usuario.\nTu base de conocimiento es EXCLUSIVAMENTE el siguiente objeto JSON que contiene errores conocidos y soluciones.\n\n[\n  {\n    \"error_id\": \"100-1885272\",\n    \"error_title\": \"Presupuesto demasiado bajo\",\n    \"error_message\": \"El presupuesto del conjunto de anuncios debe ser de más de $2,00 o es posible que tus anuncios no se entreguen.\",\n    \"solution_steps\": \"Debes escribir un presupuesto mayor a este pero con supervision de que sea adecuado.\",\n    \"tutorial_topic\": \"Al no dejar  subir la campañas por presupuesto, lo que debes hacer es subir el presupuesto.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-2446206\",\n    \"error_title\": \"DofAssetFeedSpecFieldsCanNotContainDuplicateValue\",\n    \"error_message\": \"Elimina los valores duplicados en descriptions del anuncio con la función de grados de libertad activada.\",\n    \"solution_steps\": \"Escribe un titulo, una descripcion y un copy diferente\",\n    \"tutorial_topic\": \"Debes escribir en cada recuadro diferentes cosas, no repitas el copy, titulo, descripcion\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-1359188\",\n    \"error_title\": \"No hay ningún método de pago\",\n    \"error_message\": \"Actualización del método de pago. Configuración de pago: Ve al Centro de facturación y pagos para añadir un método de pago válido.\",\n    \"solution_steps\": \"TEMA: SOLUCIÓN: CUENTA DESACTIVADA POR PAGOS Contexto: Error común cuando falla el método de pago registrado o la tarjeta ha vencido, impidiendo la circulación de los anuncios.\\nIniciar sesión en el perfil personal de Facebook en el navegador.\\nAbrir una nueva pestaña, buscar \\\"Ads Manager\\\" e ingresar al \\\"Administrador de anuncios\\\".\\nVerificar si aparece una advertencia en la parte superior indicando \\\"Error de cuenta\\\", \\\"Tarjeta vencida\\\" o \\\"Fallo en el pago\\\".\\nIr al menú \\\"Todas las herramientas\\\" (icono de tres líneas) en el lado izquierdo y seleccionar \\\"Facturación y pagos\\\".\\nEn el panel de la izquierda, hacer clic en \\\"Configuración de pago\\\".\\nBuscar la sección \\\"Métodos de pago\\\".\\nHacer clic en \\\"Agregar método de pago\\\" si se necesita una tarjeta nueva, o en los tres puntos (...) junto a la tarjeta existente para editarla.\\nIngresar los datos actualizados de la tarjeta de crédito o débito (Nombre, Número, Fecha de vencimiento, CVV).\\nHacer clic en \\\"Guardar\\\".\\nSi hay un saldo pendiente, procesar el pago manualmente haciendo clic en \\\"Pagar ahora\\\".\\nRefrescar la página para confirmar que la advertencia ha desaparecido y que el estado de la cuenta está activo.\",\n    \"tutorial_topic\": \"Se va a configuarcion dentro administrador de anuncios\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1pJR2Bs9354txFeSEbjVzWR9Efzl0OURI/view?usp=sharing\"\n  },\n  {\n    \"error_id\": \"100-1487756\",\n    \"error_title\": \"No se pueden usar los lugares\",\n    \"error_message\": \"Algunos de tus lugares se superponen. Elimina un lugar.\",\n    \"solution_steps\": \"Ve a ubicaciones y agregas solo un pais o una ciudad\",\n    \"tutorial_topic\": \"En ubicaciones solo debes dejar un pais o ciudad\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-1885252\",\n    \"error_title\": \"El video no se puede usar todavía en el anuncio\",\n    \"error_message\": \"El video aún se está procesando. Para poder usarlo en un anuncio, espera a que finalice su procesamiento.\",\n    \"solution_steps\": \"Ve a tus videos y revisa que sean Mp4 y pesen 100\",\n    \"tutorial_topic\": \"Subir tus videos esta tomando un poco de tiempo,si despues de unos minutos no te deja revisa su peso.\",\n    \"tutorial_link\": \"https://drive.google.com/drive/u/1/folders/1xjTzUUjg6cTSl2opAgxxtWxL0Q1WNtBa\"\n  },\n  {\n    \"error_id\": \"100-2446886\",\n    \"error_title\": \"Se requiere una cuenta de WhatsApp Business para la página\",\n    \"error_message\": \"Tu página no está vinculada a una cuenta de WhatsApp. Conecta una cuenta de WhatsApp Business para dirigir el tráfico a WhatsApp.\",\n    \"solution_steps\": \"TEMA: CONECTAR WHATSAPP BUSINESS A FACEBOOK\\nIr a la Página de Facebook (Modo administración).\\n\\\"Configuración\\\" -> \\\"Cuentas vinculadas\\\".\\nSeleccionar \\\"WhatsApp\\\".\\nIngresar el número de teléfono de WhatsApp Business.\\nIngresar el código de confirmación recibido en el móvil.\\nConfirmar vinculación.\",\n    \"tutorial_topic\": \"Tu página no está vinculada a una cuenta de WhatsApp. Conecta una cuenta de WhatsApp Business para dirigir el tráfico a WhatsApp.Aqui encuentras el tutorial de como hacerlo\",\n    \"tutorial_link\": \"https://drive.google.com/drive/u/1/folders/1xjTzUUjg6cTSl2opAgxxtWxL0Q1WNtBa\"\n  },\n  {\n    \"error_id\": \"200-1815199\",\n    \"error_title\": \"La cuenta publicitaria no tiene acceso a la cuenta de Instagram\",\n    \"error_message\": \"La cuenta publicitaria no tiene acceso a esta cuenta de Instagram. Usa una cuenta de Instagram autorizada o asigna primero una cuenta publicitaria a esta cuenta de Instagram.\",\n    \"solution_steps\": \"TEMA: SOLUCIÓN: SIN ACCESO A LA CUENTA PUBLICITARIA Contexto: El usuario ve la cuenta pero no puede editar campañas.\\nIr a \\\"Configuración del negocio\\\" -> \\\"Usuarios\\\" -> \\\"Personas\\\".\\nClic en \\\"Invitar personas\\\" e ingresar el correo del usuario.\\nSeleccionar \\\"Acceso de administrador\\\".\\nEn \\\"Asignar activos\\\", ir a \\\"Cuentas publicitarias\\\" y seleccionar la cuenta correspondiente.\\nActivar todos los permisos (Control total).\\nEnviar invitación. El usuario debe aceptar la invitación desde su correo electrónico.\",\n    \"tutorial_topic\": \"La cuenta publicitaria no tiene acceso a esta cuenta de Instagram. Usa una cuenta de Instagram autorizada o asigna primero una cuenta publicitaria a esta cuenta de Instagram. En este tutorial lo vas a poder encontrar.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1jRBTQjn2fVdF-NaOkjQQ78RHi5dEy10l/view?usp=sharing\"\n  },\n  {\n    \"error_id\": \"3-2859002\",\n    \"error_title\": \"Certificación necesaria\",\n    \"error_message\": \"Antes de poner anuncios en circulación, debes certificar el cumplimiento de nuestra política de no discriminación. Para hacerlo, visita facebook.com/certification/nondiscrimination.\",\n    \"solution_steps\": \"Revisa lo que estas publicando segun normas de facebook\",\n    \"tutorial_topic\": \"Recuerda no infringir las normas de facebook, revisa tus copy y tus creativos\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-1487246\",\n    \"error_title\": \"Error al crear la campaña\",\n    \"error_message\": \"Error al crear la campaña:This WhatsApp phone number is not linked to your account\",\n    \"solution_steps\": \"TEMA: CONECTAR WHATSAPP BUSINESS A FACEBOOK\\nIr a la Página de Facebook (Modo administración).\\n\\\"Configuración\\\" -> \\\"Cuentas vinculadas\\\".\\nSeleccionar \\\"WhatsApp\\\".\\nIngresar el número de teléfono de WhatsApp Business.\\nIngresar el código de confirmación recibido en el móvil.\\nConfirmar vinculación.\",\n    \"tutorial_topic\": \"El WhatsApp business no esta vinculado en tu cuenta, realiza el proceso\",\n    \"tutorial_link\": \"https://drive.google.com/drive/u/1/folders/1xjTzUUjg6cTSl2opAgxxtWxL0Q1WNtBa\"\n  },\n  {\n    \"error_id\": \"100-2446391\",\n    \"error_title\": \"Anuncio incompleto\",\n    \"error_message\": \"A tu anuncio le faltan uno o varios campos obligatorios. Asegúrate de que cada sección del anuncio esté completa.\",\n    \"solution_steps\": \"Ve al inicio de tu anuncio y verifica que todos los campos esten bien editados\",\n    \"tutorial_topic\": \"Revisa que todos los campos esten diligenciados correctamente\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-2490499\",\n    \"error_title\": \"Error\",\n    \"error_message\": \"La ubicación del feed del perfil de Facebook aún no es compatible\",\n    \"solution_steps\": \"Debes tener en cuenta que todas las cuentas que elijas deben coincidir.verificalas\",\n    \"tutorial_topic\": \"Verifica bien que estes ingresando el facebook correcto.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-2446921\",\n    \"error_title\": \"La optimización de conversaciones no está disponible para los números de WhatsApp de tu ubicación\",\n    \"error_message\": \"Los números de WhatsApp de tu ubicación no se pueden usar para la optimización de conversaciones. Selecciona otra optimización diferente u otra app de mensajes para continuar.\",\n    \"solution_steps\": \"Primero identifica la antiguedad de tu portafolio comercial,confirmar que tu whatsapp sea business y que la aplicacion este actualizada, si tu portafolio no es antiguo puedes ir calentando tu cuenta con campa;as de interccion y de ser tu whatsapp debes actualizarlo\",\n    \"tutorial_topic\": \"Primero identifica la antiguedad de tu portafolio comercial,confirmar que tu whatsapp sea business y que la aplicacion este actualizada, si tu portafolio no es antiguo puedes ir calentando tu cuenta con campa;as de interccion y de ser tu whatsapp debes actualizarlo\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-1885374\",\n    \"error_title\": \"Formatos de anuncios no válidos en la lista de activos\",\n    \"error_message\": \"Una lista de activos solo puede tener un formato de anuncio.\",\n    \"solution_steps\": \"Verifica que estes realizando un solo formato de anuncio\",\n    \"tutorial_topic\": \"Verifica que estes realizando un solo formato de anuncio\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"10-1341012\",\n    \"error_title\": \"No tienes permisos para acceder a este perfil\",\n    \"error_message\": \"No tienes los permisos requeridos para acceder a este perfil\",\n    \"solution_steps\": \"SOLUCIÓN: USUARIO NO ES ADMINISTRADOR DE LA PÁGINA Contexto: Cuando el cliente no puede editar o conectar la página. Se requiere que el dueño actual le dé acceso.\\nEl dueño actual debe ir a \\\"Configuración del negocio\\\" -> \\\"Páginas\\\".\\nSeleccionar la página y dar clic en \\\"Asignar personas\\\".\\nSi la persona ya está en el Business Manager, seleccionarla. Si no, invitarla por correo.\\nHabilitar la opción \\\"Control Total\\\" (Administración).\\nClic en \\\"Asignar\\\".\",\n    \"tutorial_topic\": \"Verifica que tienes todos los permisos de este Facebook para realizar procesos. Debes tener control total\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-3858479\",\n    \"error_title\": \"El objetivo de rendimiento no está disponible\",\n    \"error_message\": \"El objetivo de rendimiento Conversaciones no está disponible para los anuncios de clic a WhatsApp. Para continuar, actualiza tu objetivo de rendimiento a \\\"Maximizar el número de clics en el enlace\\\".\",\n    \"solution_steps\": \"El objetivo de rendimiento Conversaciones no está disponible para los anuncios de clic a WhatsApp. Para continuar, actualiza tu objetivo de rendimiento a \\\"Maximizar el número de clics en el enlace\\\".\",\n    \"tutorial_topic\": \"El objetivo de rendimiento Conversaciones no está disponible para los anuncios de clic a WhatsApp. Para continuar, actualiza tu objetivo de rendimiento a \\\"Maximizar el número de clics en el enlace\\\".\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"200-1487194\",\n    \"error_title\": \"Error de permiso\",\n    \"error_message\": \"El objeto al que intentas acceder no está visible para ti o la acción que intentas realizar está restringida a ciertos tipos de cuenta.\",\n    \"solution_steps\": \"SOLUCIÓN: USUARIO NO ES ADMINISTRADOR DE LA PÁGINA Contexto: Cuando el cliente no puede editar o conectar la página. Se requiere que el dueño actual le dé acceso.\\nEl dueño actual debe ir a \\\"Configuración del negocio\\\" -> \\\"Páginas\\\".\\nSeleccionar la página y dar clic en \\\"Asignar personas\\\".\\nSi la persona ya está en el Business Manager, seleccionarla. Si no, invitarla por correo.\\nHabilitar la opción \\\"Control Total\\\" (Administración).\\nClic en \\\"Asignar\\\".\",\n    \"tutorial_topic\": \"El objeto al que intentas acceder no está visible para ti o la acción que intentas realizar está restringida a ciertos tipos de cuenta.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-2446386\",\n    \"error_title\": \"No se ha encontrado la imagen\",\n    \"error_message\": \"La imagen que has seleccionado no está disponible. Es posible que se haya eliminado o que no tengas permiso para usarla en anuncios. Selecciona otra imagen.\",\n    \"solution_steps\": \"Verifica que tus imagenes y/o videos cumplan con los requisitos\",\n    \"tutorial_topic\": \"La imagen que has seleccionado no está disponible. Es posible que se haya eliminado o que no tengas permiso para usarla en anuncios. Selecciona otra imagen.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/11u9pwmRxH3EBwew97H1uometXqcgYR2o/view?usp=sharing\"\n  },\n  {\n    \"error_id\": \"100-2875006\",\n    \"error_title\": \"El archivo multimedia no tiene el ancho suficiente\",\n    \"error_message\": \"Tu anuncio no se publicará en Instagram porque incluye contenido multimedia (una imagen, un video o una miniatura de video) que tiene menos de 500 píxeles de ancho. Selecciona un archivo que tenga más de 500 píxeles de ancho.\",\n    \"solution_steps\": \"Verifica que tu  contenido multimedia (una imagen, un video o una miniatura de video) que tiene menos de 500 píxeles de ancho. Selecciona un archivo que tenga más de 500 píxeles de ancho.\",\n    \"tutorial_topic\": \"Tu anuncio no se publicará en Instagram porque incluye contenido multimedia (una imagen, un video o una miniatura de video) que tiene menos de 500 píxeles de ancho. Selecciona un archivo que tenga más de 500 píxeles de ancho.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/11u9pwmRxH3EBwew97H1uometXqcgYR2o/view?usp=sharing\"\n  },\n  {\n    \"error_id\": \"100-1885423\",\n    \"error_title\": \"El intervalo de atribución no es válido\",\n    \"error_message\": \"El intervalo de atribución de conversiones es un número entero opcional (que acepta el valor NULL) que especifica el número de días del tamaño del intervalo de atribución de clic. Según los objetivos y la optimización que has seleccionado, los valores admitidos representan un intervalo de atribución de 1 día(s).\",\n    \"solution_steps\": \"\",\n    \"tutorial_topic\": \"\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"error_id\": \"100-1443226\",\n    \"error_title\": \"El anuncio necesita la miniatura de un video\",\n    \"error_message\": \"Especifica un valor \\\"image_hash\\\" o \\\"image_url\\\" en el campo \\\"video_data\\\" de \\\"object_story_spec\\\".\",\n    \"solution_steps\": \"Verifica que tu  contenido multimedia (una imagen, un video o una miniatura de video) que tiene menos de 500 píxeles de ancho. Selecciona un archivo que tenga más de 500 píxeles de ancho.\",\n    \"tutorial_topic\": \"Especifica un valor \\\"image_hash\\\" o \\\"image_url\\\" en el campo \\\"video_data\\\" de \\\"object_story_spec\\\".\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/11u9pwmRxH3EBwew97H1uometXqcgYR2o/view?usp=sharing\"\n  },\n  {\n    \"error_id\": \"100-1487390\",\n    \"error_title\": \"Error al crear el mensaje del anuncio\",\n    \"error_message\": \"Se ha producido un error al crear Adcreative por el siguiente motivo: Se ha producido un error. Vuelve a intentarlo más tarde.\",\n    \"solution_steps\": \"Verifica bien toda la informacion que estas ingresando en copy,Titulo, Descripcion\",\n    \"tutorial_topic\": \"Verifica bien toda la informacion que estas ingresando en copy,Titulo, Descripcion\",\n    \"tutorial_link\": \"\"\n  }\n]\n\nInstrucciones:\n1. Analiza el problema del usuario. Busca palabras clave que coincidan con la descripcion, \"error_title\", \"error_message\" o \"error_id\" en tu base de conocimiento JSON.\n2. Si encuentras una coincidencia:\n   - Identifica el problema claramente.\n   - Proporciona los \"solution_steps\" de manera directa, amigable y clara.\n- Si \"solution_steps\" está vacío, usa el \"error_message\" para explicarle al usuario qué ajuste debe hacer en su cuenta de Meta para que SaleADS pueda continuar.\n3. MANEJO DE ENLACES (IMPORTANTE):\n   - Verifica el campo \"tutorial_link\" del registro encontrado.\n   - CASO A (Tiene URL): Si el campo contiene un link (ej: https://...), agrégalo al final de tu respuesta diciendo: \"Para más detalle, puedes ver este recurso: [tutorial_link]\".\n   - CASO B (Está vacío): Si el campo es una cadena vacía (\"\"), NO menciones videos, ni enlaces, ni tutoriales. NO digas \"no hay video disponible\". Simplemente termina tu respuesta amablemente después de la solución.\n4. Si NO encuentras una coincidencia exacta en el JSON, usa tu conocimiento general para sugerir que verifiquen el mensaje de error, pero prioriza siempre la data del JSON.\n5. Tu tono debe ser experto, empático y orientado a que el usuario logre lanzar su campaña con nuestra IA.\n\nFormato de respuesta:\n\"He identificado el error: [Título del error].\nEsto suele pasar porque: [Mensaje del error/Causa].\nSolución:\n[Pasos de solución]\n\nPara más detalle, consulta este recurso: [tutorial_link]\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        1856,
+        1328
+      ],
+      "id": "3263f4a4-6753-49b0-9d64-fb0ca9038c1a",
+      "name": "Sub_Agente_Errores_Meta"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        1696
+      ],
+      "id": "2fcb3912-1b0b-4525-9f7f-369f10f3c569",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "=USE THIS FOR ANY INFORMATION ABOUT PRODUCT DETAILS AT ALL, DON'T HESITATE AT ALL T SEE DETAILS\n",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Prompt__User_Message_', ``, 'string') }}",
+        "options": {
+          "systemMessage": "=Eres el Asistente de Onboarding de **SaleADS**. Ayudas a los usuarios a preparar su ecosistema digital (Facebook, Instagram, WhatsApp) para que nuestra Inteligencia Artificial tenga los accesos necesarios.\nTu base de conocimiento es el siguiente objeto JSON con guías paso a paso.\n\n[\n  {\n    \"config_id\": \"CONF-001\",\n    \"config_title\": \"CREACIÓN DE CORREO ELECTRÓNICO (GMAIL)\",\n    \"description\": \"Requisito previo para crear cuentas de redes sociales.\",\n    \"steps\": \"CREACIÓN DE CORREO ELECTRÓNICO (GMAIL) Contexto: Requisito previo para crear cuentas de redes sociales.\\nIngresar a www.gmail.com y seleccionar \\\"Crear cuenta\\\".\\nIngresar nombre, apellidos, nombre de usuario deseado y una contraseña segura. Clic en \\\"Siguiente\\\".\\nVerificación telefónica: Ingresar número de teléfono, recibir código por SMS e ingresarlo en la casilla correspondiente.\\n(Opcional) Agregar correo de recuperación.\\nIngresar fecha de nacimiento y género.\\nAceptar términos y condiciones para finalizar la creación.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1mS08KP-dj5TcYHqQfj5_h2yL54egiRvO/view?usp=sharing\"\n  },\n  {\n    \"config_id\": \"CONF-002\",\n    \"config_title\": \"CREACIÓN DE PÁGINA DE FACEBOOK (FAN PAGE)\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: CREACIÓN DE PÁGINA DE FACEBOOK (FAN PAGE) Contexto: Necesaria para pautar publicidad.\\nIniciar sesión en el perfil personal de Facebook.\\nIr al menú \\\"Páginas\\\" (icono de bandera) o panel izquierdo y seleccionar \\\"Crear nueva página\\\".\\nIngresar el Nombre de la página y la Categoría.\\nAgregar una descripción (Bio) y dar clic en \\\"Crear página\\\".\\nConfiguración de contacto: Si hay sitio web, agregarlo. Si no, dejar en blanco.\\nAgregar número de teléfono (WhatsApp), correo electrónico y ubicación (dirección y ciudad).\\nHorario: Seleccionar \\\"Siempre abierto\\\" (recomendado para negocios online).\\nImágenes: Subir foto de perfil y foto de portada. Clic en \\\"Siguiente\\\".\\nConectar WhatsApp: Seleccionar indicativo del país, ingresar número, solicitar código y confirmar.\\nClic en \\\"Listo\\\" para finalizar.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1O3QSS_ndiQh01XmegMolmxSFrIAsq4yz/view?usp=sharing\"\n  },\n  {\n    \"config_id\": \"CONF-003\",\n    \"config_title\": \"CREACIÓN DE CUENTA DE INSTAGRAM\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: CREACIÓN DE CUENTA DE INSTAGRAM Contexto: Necesaria para conectar con SaleAds y mostrar anuncios en Instagram.\\nDescargar/Abrir app de Instagram en el móvil.\\nSeleccionar \\\"Crear nueva cuenta\\\".\\nElegir nombre de usuario (si no está disponible, el sistema sugerirá variaciones).\\nCrear contraseña segura.\\nAgregar fecha de nacimiento.\\nIngresar número de celular para verificación.\\nIngresar el código de confirmación recibido por SMS.\\nAgregar foto de perfil.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1WcW9egAfvoEZhBpVQyOxM8ViiCDAJWle/view?usp=sharing\"\n  },\n  {\n    \"config_id\": \"CONF-004\",\n    \"config_title\": \"CREACIÓN DE CUENTA PUBLICITARIA (ADS MANAGER)\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: CREACIÓN DE CUENTA PUBLICITARIA (ADS MANAGER) Contexto: Donde se administran los pagos y campañas.\\nIniciar sesión en Facebook en el navegador.\\nAbrir nueva pestaña e ir a: business.facebook.com/adsmanager o buscar \\\"Administrador de Anuncios\\\".\\nIr al menú \\\"Todas las herramientas\\\" (tres líneas horizontales) -> \\\"Configuración del negocio\\\".\\nCrear Portafolio Comercial (si no existe): Clic en \\\"Crear Negocio\\\", asignar nombre y correo electrónico. Confirmar en el correo recibido.\\nDentro de Configuración del Negocio, ir a menú lateral \\\"Cuentas\\\" -> \\\"Cuentas publicitarias\\\".\\nClic en \\\"Agregar\\\" -> \\\"Crear una cuenta publicitaria nueva\\\".\\nAsignar nombre a la cuenta.\\nImportante: Configurar Zona Horaria correcta y Divisa (Dólares o Moneda Local).\\nSeleccionar que la cuenta se usará para \\\"Mi negocio\\\".\\nAceptar condiciones y clic en \\\"Crear\\\".\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/1OK8n01yyf7acgBG1A_5jmWbfoT0_p_KO/view?usp=sharing\"\n  },\n  {\n    \"config_id\": \"CONF-005\",\n    \"config_title\": \"VINCULAR CUENTA PUBLICITARIA CON INSTAGRAM\",\n    \"description\": \"\",\n    \"steps\": \"VINCULAR CUENTA PUBLICITARIA CON INSTAGRAM Contexto: Soluciona el error de \\\"Cuenta publicitaria sin acceso a Instagram\\\".\\nIr a \\\"Configuración del negocio\\\" en Meta Business Suite.\\nEn menú lateral: \\\"Cuentas\\\" -> \\\"Cuentas de Instagram\\\".\\nClic en \\\"Agregar\\\" -> \\\"Conectar tu cuenta de Instagram\\\".\\nIniciar sesión con usuario y contraseña de Instagram en la ventana emergente.\\nSi pide confirmación, guardar información.\\nUna vez agregada la cuenta de Instagram, hacer clic en el botón \\\"Agregar activos\\\" (o \\\"Conectar activos\\\").\\nSeleccionar la \\\"Cuenta Publicitaria\\\" creada anteriormente y dar clic en \\\"Agregar\\\" o \\\"Guardar cambios\\\".\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-006\",\n    \"config_title\": \"USUARIO NO ES ADMINISTRADOR DE LA PÁGINA\",\n    \"description\": \"\",\n    \"steps\": \"USUARIO NO ES ADMINISTRADOR DE LA PÁGINA Contexto: Cuando el cliente no puede editar o conectar la página. Se requiere que el dueño actual le dé acceso.\\nEl dueño actual debe ir a \\\"Configuración del negocio\\\" -> \\\"Páginas\\\".\\nSeleccionar la página y dar clic en \\\"Asignar personas\\\".\\nSi la persona ya está en el Business Manager, seleccionarla. Si no, invitarla por correo.\\nHabilitar la opción \\\"Control Total\\\" (Administración).\\nClic en \\\"Asignar\\\".\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-007\",\n    \"config_title\": \"AUTENTICACIÓN DE DOS PASOS\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: AUTENTICACIÓN DE DOS PASOS (2FA) Contexto: Seguridad obligatoria para Business Manager.\\nIr a Facebook -> \\\"Configuración y privacidad\\\" -> \\\"Configuración\\\".\\nAcceder al \\\"Centro de cuentas\\\" -> \\\"Contraseña y seguridad\\\".\\nSeleccionar \\\"Autenticación en dos pasos\\\".\\nElegir el método (App de autenticación como Google Authenticator o SMS).\\nSeguir los pasos para verificar y activar.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-008\",\n    \"config_title\": \"CONECTAR WHATSAPP BUSINESS A FACEBOOK\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: CONECTAR WHATSAPP BUSINESS A FACEBOOK\\nIr a la Página de Facebook (Modo administración).\\n\\\"Configuración\\\" -> \\\"Cuentas vinculadas\\\".\\nSeleccionar \\\"WhatsApp\\\".\\nIngresar el número de teléfono de WhatsApp Business.\\nIngresar el código de confirmación recibido en el móvil.\\nConfirmar vinculación.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-009\",\n    \"config_title\": \"PREPARACIÓN DE CREATIVOS (IMÁGENES Y VIDEOS)\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: PREPARACIÓN DE CREATIVOS (IMÁGENES Y VIDEOS) Contexto: Requisito previo indispensable para montar campañas publicitarias, asegurando que el material visual cumpla con los estándares de la plataforma.\\nOrganización de archivos: Crear una carpeta nueva separada con el nombre del producto que contenga todos los videos e imágenes a utilizar.\\nCantidad de material: Se recomienda tener listos entre 5, 10 o 20 creativos (imágenes o videos), dependiendo del objetivo de la campaña que se va a elegir.\\nPeso máximo (Videos): Asegurar que los archivos de video no superen los 100 MB de tamaño.\\nVerificación de propiedades: Para conocer el peso del archivo, dar clic derecho sobre el video -> \\\"Mostrar más opciones\\\" -> \\\"Propiedades\\\" y revisar el tamaño.\\nDuración recomendada: Los videos deben tener una duración aproximada de entre 30 y 40 segundos.\\nResolución y Formato: Utilizar un tamaño recomendado de 1080 x 1920 píxeles (formato vertical similar a las Historias de Instagram) para cubrir la pantalla completa del dispositivo móvil.\\nDisponibilidad: Tener todos los recursos listos antes de ingresar a la plataforma de anuncios para que el paso de carga sea inmediato.\",\n    \"tutorial_link\": \"https://drive.google.com/file/d/11u9pwmRxH3EBwew97H1uometXqcgYR2o/view?usp=sharing\"\n  },\n  {\n    \"config_id\": \"CONF-010\",\n    \"config_title\": \"USUARIO NO ES ADMINISTRADOR / INVITAR AL PORTAFOLIO\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: SOLUCIÓN: USUARIO NO ES ADMINISTRADOR / INVITAR AL PORTAFOLIO Contexto: Procedimiento para dar acceso total a una persona externa cuando no tiene permisos para gestionar la página o los activos.\\nIniciar sesión en el perfil personal de Facebook en el navegador.\\nAbrir una nueva pestaña, buscar \\\"Ads Manager\\\" e ingresar al \\\"Administrador de anuncios\\\".\\nIr al menú \\\"Todas las herramientas\\\" (icono de tres líneas) y seleccionar \\\"Configuración del negocio\\\".\\nSeleccionar el Portafolio Comercial correcto.\\nEn el menú lateral izquierdo, ir a la sección \\\"Usuarios\\\" y seleccionar \\\"Personas\\\".\\nClic en el botón \\\"Invitar a personas\\\".\\nIngresar la dirección de correo electrónico de la persona a la que se le dará el acceso. Clic en \\\"Siguiente\\\".\\nEn opciones de acceso, seleccionar \\\"Control total\\\" (Administrar) para que tenga todos los permisos. Clic en \\\"Siguiente\\\".\\nEn el paso de \\\"Asignar activos comerciales\\\", seleccionar: la Página de Facebook, la Cuenta de Instagram y la Cuenta Publicitaria.Para cada uno de estos activos, habilitar el interruptor de \\\"Control total\\\" (Todo) en el panel derecho.\\nClic en \\\"Invitar con [X] activos\\\" para enviar la solicitud.\\nConfirmar que el estado del usuario aparezca como \\\"Invitado\\\". La persona debe aceptar la invitación que llegará a su correo electrónico.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-011\",\n    \"config_title\": \"EL USUARIO NO TIENE ACCESO A LA CUENTA PUBLICITARIA\",\n    \"description\": \"\",\n    \"steps\": \"TEMA: SOLUCIÓN: EL USUARIO NO TIENE ACCESO A LA CUENTA PUBLICITARIA Contexto: Procedimiento para invitar a una persona externa al Portafolio Comercial y otorgarle control total sobre los activos (Página, Instagram y Cuenta Publicitaria).\\nIniciar sesión en el perfil personal de Facebook en el navegador.\\nAbrir una nueva pestaña, buscar \\\"Ads Manager\\\" e ingresar al \\\"Administrador de anuncios\\\".\\nIr al menú \\\"Todas las herramientas\\\" (icono de tres líneas) y seleccionar \\\"Configuración del negocio\\\".\\nSeleccionar el Portafolio Comercial correcto.\\nEn el menú lateral izquierdo, ir a la sección \\\"Usuarios\\\" y seleccionar \\\"Personas\\\".\\nClic en el botón \\\"Invitar a personas\\\".\\nIngresar la dirección de correo electrónico de la persona a invitar. Clic en \\\"Siguiente\\\".\\nEn opciones de acceso, seleccionar \\\"Control total\\\" (Administrar) -> \\\"Todo\\\". Clic en \\\"Siguiente\\\".\\nEn el paso de \\\"Asignar activos comerciales\\\", seleccionar: la Página de Facebook, la Cuenta de Instagram y la Cuenta Publicitaria.\\nImportante: Para cada activo seleccionado, habilitar el interruptor de \\\"Control total\\\" en el panel derecho para asegurar que tenga permisos de administración.\\nClic en \\\"Siguiente\\\" y luego en \\\"Invitar con [X] activos\\\" para enviar la solicitud.\\nParte del usuario invitado: Debe abrir su correo electrónico, buscar la invitación de Meta y hacer clic en \\\"Empezar\\\" o \\\"Ver invitación\\\".\\nIniciar sesión con su propio perfil de Facebook, ingresar el nombre con el que aparecerá en el negocio y hacer clic en \\\"Aceptar invitación\\\".\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-012\",\n    \"config_title\": \"POR QUÉ PIDE TARJETA / COBRO EN EL REGISTRO (ACCESO ANTICIPADO)\",\n    \"description\": \"Explicación de seguridad sobre por qué se solicita tarjeta aunque el primer mes sea gratis.\",\n    \"steps\": \"TEMA: POR QUÉ SE PIDE TARJETA EN EL REGISTRO\\n1. El sistema solicita la tarjeta para filtrar bots y verificar que eres un humano real.\\n2. NO se realiza ningún cobro inmediato. Tienes un mes (30 días) completamente GRATIS.\\n3. El plan tiene un valor normal de 59 USD, pero en este acceso anticipado es costo cero el primer mes.\\n4. Solo se cobrará después de los 30 días si decides mantenerte en la plataforma.\\n5. Completar este paso activa tu 'llave dorada' para empezar a hacer anuncios con IA en segundos en lugar de horas.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-013\",\n    \"config_title\": \"CÓMO ACTIVAR LLAVE DORADA\",\n    \"description\": \"Instrucciones para desbloquear el acceso total a SaleADS invitando colegas.\",\n    \"steps\": \"TEMA: ACTIVACIÓN DE CUENTA (EL MOTOR FERRARI)\\n1. Tienes la cuenta creada (el motor), pero para encenderla necesitas las '5 Llaves'.\\n2. Para activar el acceso total y lanzar campañas, debes invitar a 5 colegas (referidos).\\n3. Tus 5 colegas deben realizar el mismo proceso: registrarse y suscribirse a la plataforma.\\n4. Una vez completado, se activa automáticamente tu acceso para todas las campañas.\\n5. IMPORTANTE: No se puede pagar por el acceso (ni aunque ofrezcas dinero). El acceso es exclusivo mediante la comunidad y referidos.\\n6. El tiempo de prueba de 30 días ya está corriendo, así que debes hacerlo rápido.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-014\",\n    \"config_title\": \"CONEXIÓN DE CUENTAS (META / FACEBOOK / INSTAGRAM)\",\n    \"description\": \"Paso obligatorio para que la IA comprenda el negocio.\",\n    \"steps\": \"TEMA: CONEXIÓN DE CUENTAS A SALEADS\\n1. Ir a 'Cuentas Conectadas' y hacer clic en 'Conectar cuenta' (Meta).\\n2. En Facebook, dar clic en 'Editar configuración anterior'.\\n3. IMPORTANTE: Seleccionar 'Activar todas las páginas actuales y futuras' y 'Todos los negocios actuales y futuros'.\\n4. En Instagram: 'Activar todas las cuentas actuales y futuras'.\\n5. En WhatsApp: NO activar todas. Desmarcar y marcar SOLO las cuentas de WhatsApp ACTUALES.\\n6. Dar clic en 'Continuar' -> 'Guardar' -> 'Estoy de acuerdo'.\\n7. Una vez conectado, dar clic en 'Completar Configuración' en SaleADS.\\n8. Seleccionar el Business Manager correcto, la Cuenta Publicitaria, la Página, el Píxel y (opcional) el Sitio Web.\\n9. Guardar configuración.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-015\",\n    \"config_title\": \"CONFIGURACIÓN DEL NEGOCIO (BRIEF CON IA)\",\n    \"description\": \"Generación del perfil del negocio mediante audio para la IA.\",\n    \"steps\": \"TEMA: CONFIGURACIÓN DEL NEGOCIO CON IA\\n1. Ir a 'Configurar mi Negocio'.\\n2. Grabar un audio explicando: qué vendes, quién es tu cliente ideal, qué problemas resuelves y qué hace único a tu negocio (o subir un audio existente).\\n3. Seleccionar el país donde se hará publicidad (ej: Colombia, Costa Rica, EE.UU.).\\n4. La IA analizará las redes sociales y generará el 'Brief' (puntos de dolor, identidad visual, segmentación).\\n5. Revisar el análisis generado por la IA antes de continuar.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-016\",\n    \"config_title\": \"CREACIÓN DE CAMPAÑA Y ESTRATEGIA DE COPY\",\n    \"description\": \"Selección de la estrategia publicitaria validada por la IA.\",\n    \"steps\": \"TEMA: SELECCIÓN DE ESTRATEGIA DE CAMPAÑA\\n1. Dar clic en 'Crear Campaña'.\\n2. Elegir una 'Estrategia de Copy' basada en las recomendaciones (ej: Advantage, Imagen, Video, WhatsApp, Instagram).\\n   - 'Advantage': Estructura Andrómeda (la más efectiva).\\n   - 'Advantage Prompt': Basada en intereses.\\n3. Verificar los requisitos de la estrategia (ej: si pide 10 videos o 5 imágenes).\\n4. Dar clic en 'Usar estrategia'.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-017\",\n    \"config_title\": \"CARGA DE CREATIVOS (VIDEOS E IMÁGENES)\",\n    \"description\": \"Requisitos técnicos para subir el material visual.\",\n    \"steps\": \"TEMA: CARGA DE CREATIVOS\\n1. Nombrar la campaña (ej: 'Campaña Ejemplo').\\n2. Definir presupuesto (respetar el mínimo sugerido, ej: 3-4 USD).\\n3. Cargar los videos o imágenes requeridos.\\n4. REGLA DE ORO: Los videos deben pesar MENOS de 100 MB. Si pesan más, fallarán.\\n5. Seleccionar todos los archivos y dar abrir.\",\n    \"tutorial_link\": \"\"\n  },\n  {\n    \"config_id\": \"CONF-018\",\n    \"config_title\": \"GENERACIÓN DE COPIES Y LANZAMIENTO\",\n    \"description\": \"Proceso final donde la IA crea los textos y publica la campaña.\",\n    \"steps\": \"TEMA: GENERACIÓN DE COPIES Y LANZAMIENTO\\n1. Dar clic en 'Generar Preview con Inteligencia Artificial'.\\n2. La IA subirá los videos a Meta y generará los títulos y descripciones (copies) automáticamente usando sesgos cognitivos (autoridad, escasez, etc.).\\n3. Revisar los textos. Se pueden editar si es necesario, pero siempre dar 'Guardar' tras editar.\\n4. Dar clic en 'Lanzar Campaña' -> 'Sí, quiero lanzar'.\\n5. Nota: Si aparece un mensaje tipo 'Failed to fetch' momentáneo, ignorarlo; es parte del proceso de carga. Verificar que la campaña aparezca completa.\",\n    \"tutorial_link\": \"\"\n  }\n]\n\n\nInstrucciones:\n1. Identifica qué activo necesita configurar el usuario para conectarlo a SaleADS. Busca en \"config_title\" o \"description\".\n2. \n- Presenta los pasos (\"steps\") de forma ordenada (puedes usar listas numeradas).\n- Enfatiza (sutilmente) que estos pasos son necesarios para que la plataforma funcione correctamente.\n\n\n4. SI HAY LINK: Finaliza tu respuesta diciendo: \"Aquí tienes un video tutorial de apoyo para completar esta configuración y empezar a usar SaleADS: [tutorial_link]\".\nSI NO HAY LINK (está vacío): NO menciones nada sobre videos. Termina la respuesta confirmando que, al completar estos pasos, su cuenta estará lista para utilzar SaleADS.\n\nFormato de respuesta:\n\"Claro, te ayudo a configurar [Título de la configuración].\nSigue estos pasos:\n[Lista de pasos claros basados en 'steps']\n\nAquí tienes un enlace de referencia: [tutorial_link]\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 2.2,
+      "position": [
+        2224,
+        1344
+      ],
+      "id": "51d76c9d-be0c-4c31-b357-477904342e42",
+      "name": "Sub_Agente_Configuraciones"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extract GHL Data').item.json.phone_number }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1920,
+        1664
+      ],
+      "id": "f5185fbb-f39f-44aa-87e4-6af9298fd3e1",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Extract GHL Data').item.json.phone_number }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        2320,
+        1680
+      ],
+      "id": "eefccc26-8a2a-446c-9b02-e8708e463bcf",
+      "name": "Postgres Chat Memory1",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://95.216.196.74:8080/api/webhook/n8n-response",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"sessionId\": {{ $json.sessionId.toJsonString() }},\n  \"response\": {{ $json.response.toJsonString() }},\n  \"metadata\": {\n    \"contactId\": {{ ($json.contactId || \"\").toJsonString() }},\n    \"conversationId\": {{ ($json.conversationId || \"\").toJsonString() }},\n    \"timestamp\": {{ ($json.timestamp || $now.toISO()).toJsonString() }},\n    \"phone\": {{ ($json.phone || \"\").toJsonString() }}\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2784,
+        496
+      ],
+      "id": "aff8aa99-a9fd-4ea0-b18f-c4b1e29e8d17",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "08909641-5767-4825-a847-de901ef034b0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2640,
+        848
+      ],
+      "id": "d8bf8516-facb-4e59-8f59-378bac5fd8eb",
+      "name": "chatwoot-widget-webhook",
+      "webhookId": "08909641-5767-4825-a847-de901ef034b0"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "27087d43-5c2a-47d2-bd4e-e26e1546eae3",
+              "name": "sessionId",
+              "value": "={{ $('Map GHL to Workflow Variables').item.json.sessionId || $('Extract GHL Data').item.json.phone_number || 'unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "dc1ed5e8-e889-45bf-9afb-148571baecdf",
+              "name": "response",
+              "value": "={{ $('Agente_Orquestador').item.json.output || 'No response' }}",
+              "type": "string"
+            },
+            {
+              "id": "77372aac-9314-468c-8d66-89d4d2d9ab3b",
+              "name": "contactId",
+              "value": "={{ $('Map GHL to Workflow Variables').item.json.contactId || $('Map GHL to Workflow Variables').item.json.conversation_id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "f15f3e81-31f6-4f9a-a399-a2ccba1a9e82",
+              "name": "conversationId",
+              "value": "={{ $('Map GHL to Workflow Variables').item.json.metadata?.conversationId || $('Map GHL to Workflow Variables').item.json.body?.metadata?.conversationId || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "37d3b89f-e2a5-4afe-9153-eeb8248e5a21",
+              "name": "phone",
+              "value": "={{ $('Map GHL to Workflow Variables').item.json.phone || $('Extract GHL Data').item.json.phone_number || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "256b620e-b1ad-46c3-84cd-edf1a7fd154c",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "d029db06-2a54-42d0-95c1-7d087767871a",
+              "name": "subAgent",
+              "value": "={{ $('Agente_Orquestador').item.json.sub_agente || null }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2480,
+        592
+      ],
+      "id": "c73de1bc-81fd-407d-a5ca-6c96ef38f0a9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "id": "37a6ef16-e890-4ecc-b1ff-84eb35062bc7",
+      "name": "Stop - Asesor Activo (No Responder)",
+      "type": "n8n-nodes-base.noOp",
+      "position": [
+        -1520,
+        528
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://n8n-agencia-chatwoot.3e3qzn.easypanel.host/api/v1/accounts/{{ $('Extraer Datos2').item.json.account_id }}/conversations/{{ $('Extraer Datos2').item.json.conversation_id }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"labels\": [\"asesor\"]}",
+        "placeholderDefinitions": {
+          "values": []
+        }
+      },
+      "id": "7369641d-b1f5-4ad5-94cf-8bbc0a0a6969",
+      "name": "Herramienta_Asignar_Asesor",
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "position": [
+        2512,
+        1248
+      ],
+      "typeVersion": 1.1,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8bab4d33-265b-4b93-bd7a-e98998eb4e93",
+      "name": "Filtrar Mensajes Entrantes2",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -2320,
+        848
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "account_id",
+              "type": "number",
+              "value": "={{ $json.body.account.id }}"
+            },
+            {
+              "id": "2",
+              "name": "conversation_id",
+              "type": "number",
+              "value": "={{ $json.body.conversation.id }}"
+            },
+            {
+              "id": "3",
+              "name": "mensaje",
+              "type": "string",
+              "value": "={{ $json.body.content }}"
+            },
+            {
+              "id": "4",
+              "name": "contact_name",
+              "type": "string",
+              "value": "={{ $json.body.sender.name }}"
+            },
+            {
+              "id": "5",
+              "name": "phone_number",
+              "type": "string",
+              "value": "={{ $json.body.sender.phone_number || 'No disponible' }}"
+            },
+            {
+              "id": "6",
+              "name": "inbox_id",
+              "type": "number",
+              "value": "={{ $json.body.inbox.id }}"
+            },
+            {
+              "id": "7",
+              "name": "contact_id",
+              "type": "number",
+              "value": "={{ $json.body.sender.id }}"
+            },
+            {
+              "id": "8",
+              "name": "has_attachments",
+              "type": "boolean",
+              "value": "={{ $json.body.attachments && $json.body.attachments.length > 0 }}"
+            },
+            {
+              "id": "9",
+              "name": "first_attachment",
+              "type": "object",
+              "value": "={{ $json.body.attachments && $json.body.attachments.length > 0 ? $json.body.attachments[0] : null }}"
+            },
+            {
+              "id": "10",
+              "name": "attachment_type",
+              "type": "string",
+              "value": "={{ $json.body.attachments && $json.body.attachments.length > 0 ? $json.body.attachments[0].file_type : 'none' }}"
+            },
+            {
+              "id": "11",
+              "name": "has_text",
+              "type": "boolean",
+              "value": "={{ $json.body.content && $json.body.content.trim() !== '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "03279287-ae85-4974-be7b-99a661ec3012",
+      "name": "Extraer Datos2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -2096,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "1",
+              "leftValue": "={{ $json.payload && Array.isArray($json.payload) && $json.payload.includes('asesor') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7d36152f-afcf-485b-b31e-4be47549728c",
+      "name": "Tiene Etiqueta Asesor2",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1648,
+        848
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1136,
+        176
+      ],
+      "id": "e0065505-5f44-43f3-a0d7-423cadcc0721",
+      "name": "Ensure Image URL is Ready3",
+      "webhookId": "a9766955-5bf4-407b-9c6f-28039fa96fcc"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1136,
+        480
+      ],
+      "id": "4f7ed0f0-9041-4b2e-936c-909ebece1360",
+      "name": "Ensure Audio URL is Ready3",
+      "webhookId": "7989c537-b843-4deb-a6db-7255f7577283"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1120,
+        832
+      ],
+      "id": "c48fbd0e-27c8-4944-9a74-dd2c6d919789",
+      "name": "Ensure Video URL is Ready3",
+      "webhookId": "0b81c969-ab0d-4977-9bea-5a98d4822379"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extraer Datos2').item.json.first_attachment.data_url.replace('n8n_agencia', 'n8n-agencia') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "f6c352bb-0a6d-45be-a6ec-85b44df7eb70",
+      "name": "Download Image3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -896,
+        176
+      ],
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "waitBetweenTries": 3000,
+      "maxTries": 3,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extraer Datos2').item.json.first_attachment.data_url.replace('n8n_agencia', 'n8n-agencia') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "320be1db-d4fc-42c7-a08b-3f7d9be182ae",
+      "name": "Download Audio3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -912,
+        480
+      ],
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Extraer Datos2').item.json.first_attachment.data_url.replace('n8n_agencia', 'n8n-agencia') }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "835d4c65-8f5d-4a8f-baae-0ec3ebaf68bc",
+      "name": "Download Video3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -880,
+        832
+      ],
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analiza esta imagen y describe lo que ves. Si hay texto en la imagen, transcríbelo también.{{ $('Extraer Datos2').item.json.has_text ? ' Contexto adicional del usuario: ' + $('Extraer Datos2').item.json.mensaje : '' }}",
+        "messages": {
+          "messageValues": [
+            {
+              "type": "HumanMessagePromptTemplate",
+              "messageType": "imageBinary"
+            }
+          ]
+        }
+      },
+      "id": "03800565-c4c6-4e2a-afea-0aeb0b26aa05",
+      "name": "Analyze Image3",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "position": [
+        -624,
+        176
+      ],
+      "typeVersion": 1.4
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: 'Transcribe este audio y proporciona el texto completo.' + ($('Extraer Datos2').item.json.has_text ? ' Contexto adicional del usuario: ' + $('Extraer Datos2').item.json.mensaje : '') }, { inlineData: { mimeType: 'audio/mp4', data: $input.item.binary.data.data } }] }] }) }}",
+        "options": {}
+      },
+      "id": "8f7375d2-30ed-4dbe-a79a-46234fbccaa0",
+      "name": "Transcribe Audio3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -656,
+        480
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: 'Describe este video y explica qué está sucediendo en detalle.' + ($('Extraer Datos2').item.json.has_text ? ' Contexto adicional del usuario: ' + $('Extraer Datos2').item.json.mensaje : '') }, { inlineData: { mimeType: 'video/mp4', data: $input.item.binary.data.data } }] }] }) }}",
+        "options": {}
+      },
+      "id": "84f74555-7063-4640-b02a-e7a51409fec0",
+      "name": "Analyze Video3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -608,
+        832
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "2faeeb8a-5c23-4f88-9bfa-0d255f6f7653",
+      "name": "Google Gemini Model2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "position": [
+        -624,
+        304
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "format-image-response",
+              "name": "analyzed_content",
+              "type": "string",
+              "value": "={{ $json.text || 'Error al analizar imagen' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "image_analysis"
+            },
+            {
+              "id": "has-original-text",
+              "name": "has_original_text",
+              "type": "boolean",
+              "value": "={{ $('Extraer Datos2').item.json.has_text }}"
+            },
+            {
+              "id": "original-text",
+              "name": "original_text",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.mensaje || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "999f7542-7059-4674-ae93-1c37a1a96f32",
+      "name": "Format Image Response3",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -320,
+        176
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "format-audio-response",
+              "name": "analyzed_content",
+              "type": "string",
+              "value": "={{ $json.candidates && $json.candidates[0] && $json.candidates[0].content && $json.candidates[0].content.parts && $json.candidates[0].content.parts[0] ? $json.candidates[0].content.parts[0].text : 'Error al transcribir audio' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "audio_transcription"
+            },
+            {
+              "id": "has-original-text",
+              "name": "has_original_text",
+              "type": "boolean",
+              "value": "={{ $('Extraer Datos2').item.json.has_text }}"
+            },
+            {
+              "id": "original-text",
+              "name": "original_text",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.mensaje || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "333d7433-feca-46b1-95ad-61c00e4c8ff5",
+      "name": "Format Audio Response3",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -336,
+        480
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "format-video-response",
+              "name": "analyzed_content",
+              "type": "string",
+              "value": "={{ $json.candidates && $json.candidates[0] && $json.candidates[0].content && $json.candidates[0].content.parts && $json.candidates[0].content.parts[0] ? $json.candidates[0].content.parts[0].text : 'Error al analizar video' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "video_analysis"
+            },
+            {
+              "id": "has-original-text",
+              "name": "has_original_text",
+              "type": "boolean",
+              "value": "={{ $('Extraer Datos2').item.json.has_text }}"
+            },
+            {
+              "id": "original-text",
+              "name": "original_text",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.mensaje || '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6b78391-4c54-4e2e-aa33-e283e10a1411",
+      "name": "Format Video Response3",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -304,
+        832
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "leftValue": "={{ $('Extraer Datos2').item.json.has_attachments && $('Extraer Datos2').item.json.attachment_type === 'image' }}",
+                    "rightValue": "",
+                    "id": "image-condition"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Has Image"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "audio-condition",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "leftValue": "={{ $('Extraer Datos2').item.json.has_attachments && $('Extraer Datos2').item.json.attachment_type === 'audio' }}",
+                    "rightValue": ""
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Has Audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "video-condition",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    },
+                    "leftValue": "={{ $('Extraer Datos2').item.json.has_attachments && $('Extraer Datos2').item.json.attachment_type === 'video' }}",
+                    "rightValue": ""
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Has Video"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Text Only"
+        }
+      },
+      "id": "362cc01d-7b2b-4d56-9fd2-e0b13139ded1",
+      "name": "Message Type Router3",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -1440,
+        800
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "format-text-response",
+              "name": "analyzed_content",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.mensaje || 'Mensaje vacío' }}"
+            },
+            {
+              "id": "content-type",
+              "name": "content_type",
+              "type": "string",
+              "value": "text_message"
+            },
+            {
+              "id": "has-original-text",
+              "name": "has_original_text",
+              "type": "boolean",
+              "value": true
+            },
+            {
+              "id": "original-text",
+              "name": "original_text",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.mensaje || '' }}"
+            },
+            {
+              "id": "d4f2a925-a90b-46d6-a835-24763254341e",
+              "name": "account_id",
+              "value": "={{ $('Extraer Datos2').item.json.account_id }}",
+              "type": "number"
+            },
+            {
+              "id": "59b63cb6-6261-4817-8647-75dc8ced6fcb",
+              "name": "conversation_id",
+              "value": "={{ $('Extraer Datos2').item.json.conversation_id }}",
+              "type": "number"
+            },
+            {
+              "id": "627b5e8f-6d72-4fb2-9739-cb2fa311c56e",
+              "name": "contact_id",
+              "value": "={{ $('Extraer Datos2').item.json.contact_id }}",
+              "type": "number"
+            },
+            {
+              "id": "8cb672d6-5bf5-45cf-9f91-c7c7593ad8da",
+              "name": "body.sender.account",
+              "value": "={{ $('Filtrar Mensajes Entrantes2').item.json.body.sender.account }}",
+              "type": "object"
+            },
+            {
+              "id": "bec7b2a7-7b56-4764-8a7a-c593c022b9c7",
+              "name": "body.sender.id",
+              "value": "={{ $('Filtrar Mensajes Entrantes2').item.json.body.sender.id }}",
+              "type": "number"
+            },
+            {
+              "id": "7be9c90d-5321-4fed-b52e-b6893f52602d",
+              "name": "body.conversation.meta.sender.name",
+              "value": "={{ $('Filtrar Mensajes Entrantes2').item.json.body.conversation.meta.sender.name }}",
+              "type": "string"
+            },
+            {
+              "id": "57dea0a1-1ab4-434a-85e1-55467f0899af",
+              "name": "body.conversation.meta.sender.phone_number",
+              "value": "={{ $('Filtrar Mensajes Entrantes2').item.json.body.conversation.meta.sender.phone_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "928669aa-c978-471f-9019-2cde3e920b9b",
+      "name": "Format Text Response4",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1088,
+        1088
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "final-message",
+              "name": "final_message",
+              "type": "string",
+              "value": "={{ $json.has_original_text && $json.content_type !== 'text_message' ? 'TEXTO: ' + $json.original_text + '\\n\\nANÁLISIS DEL ARCHIVO: ' + $json.analyzed_content : $json.analyzed_content }}"
+            },
+            {
+              "id": "message-type-info",
+              "name": "message_type",
+              "type": "string",
+              "value": "={{ $json.content_type }}"
+            },
+            {
+              "id": "891fb6b7-0a06-484f-8908-df23dfeedf2e",
+              "name": "contact_name",
+              "value": "={{ $('Extraer Datos2').item.json.contact_name }}",
+              "type": "string"
+            },
+            {
+              "id": "36d7323a-df69-4c6d-9782-d53a84e156ba",
+              "name": "phone_number",
+              "value": "={{ $('Extraer Datos2').item.json.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "80c1fd55-36d6-4924-ad79-69bdbe21e468",
+              "name": "payload",
+              "value": "={{ $('Consultar Etiquetas3').item.json.payload }}",
+              "type": "array"
+            },
+            {
+              "id": "new-contact-id",
+              "name": "contact_id",
+              "value": "={{ $('Extraer Datos2').item.json.contact_id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c255eb3b-00fc-4bd9-8bb6-b3c38303e729",
+      "name": "Consolidate Message4",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -64,
+        1056
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "url": "=https://n8n-agencia-chatwoot.3e3qzn.easypanel.host/api/v1/accounts/{{ $json.account_id }}/conversations/{{ $json.conversation_id }}/labels",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "9b9651a9-40fd-4da3-889d-c42464cb14ed",
+      "name": "Consultar Etiquetas3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1872,
+        848
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "aREpScfEBDxg3ZxL",
+          "name": "request_Widget"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "675d3fec-e8a1-4f6d-941f-d1a3b84d3264",
+              "name": "message",
+              "value": "={{ $json.final_message }}",
+              "type": "string"
+            },
+            {
+              "id": "8c23e67d-143d-4c45-b6a9-bfa36450363c",
+              "name": "body.content_type",
+              "value": "={{ $('Webhook3').item.json.body.content_type }}",
+              "type": "string"
+            },
+            {
+              "id": "5344ad54-397f-4169-a72b-30085f94178a",
+              "name": "body.conversation.messages[0].content",
+              "value": "={{ $('Webhook3').item.json.body.conversation.messages[0].content }}",
+              "type": "string"
+            },
+            {
+              "id": "87a4f827-364d-485f-a1ec-abe0bad24203",
+              "name": "body.conversation.messages[0].sender.phone_number",
+              "value": "={{ $('Webhook3').item.json.body.conversation.messages[0].sender.phone_number }}",
+              "type": "string"
+            },
+            {
+              "id": "fef6dbd0-d066-4a1b-ba90-4071be8409fc",
+              "name": "body.conversation.messages[0].sender.name",
+              "value": "={{ $('Webhook3').item.json.body.conversation.messages[0].sender.name }}",
+              "type": "string"
+            },
+            {
+              "id": "d0d5779c-e6cc-4ce2-818c-9ceb872968ea",
+              "name": "body.created_at",
+              "value": "={{ $('Webhook3').item.json.body.created_at }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        672,
+        1344
+      ],
+      "id": "2ac17908-5485-45a2-8984-fccc131c55e0",
+      "name": "Prepare AI Message for Logging2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "check-off-label",
+              "leftValue": "={{ $('Consultar Etiquetas3').item.json.payload && $('Consultar Etiquetas3').item.json.payload.includes('Off') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        320,
+        800
+      ],
+      "id": "c2054646-15b3-45ba-b1e4-c5b6ef1dbc4a",
+      "name": "Is Manual Attention Required?2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "b20b9d22-e0ee-4167-b9f3-e4e52464b380",
+              "leftValue": "={{ $('Filtrar Mensajes Entrantes2').item.json.body.message_type }}",
+              "rightValue": "incoming",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        128,
+        1056
+      ],
+      "id": "57df1139-3ca2-4d34-866a-424b0597c697",
+      "name": "Is it an Incoming User Message?2"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (session_id, message)\nVALUES ($1, $2::jsonb);\n\n\n",
+        "options": {
+          "queryReplacement": "={{ [   $json.numero,    $json.data ] }}"
+        }
+      },
+      "id": "393c6032-390f-45dd-b49d-f069e9b1eef3",
+      "name": "9. Guardar Mensaje en BD (SQL Query)2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1008,
+        1344
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "675d3fec-e8a1-4f6d-941f-d1a3b84d3264",
+              "name": "message",
+              "value": "=The user {{ $('Webhook3').item.json.body.conversation.meta.sender.name }} sent the following message: {{ $('Webhook3').item.json.body.conversation.messages[0].content }}",
+              "type": "string"
+            },
+            {
+              "id": "132e54ec-50c8-4270-a965-7800e0c6c3c7",
+              "name": "final_message",
+              "value": "={{ $('Consolidate Message4').item.json.final_message }}",
+              "type": "string"
+            },
+            {
+              "id": "0825fc69-dc41-4b70-b350-bb13ae363705",
+              "name": "contact_name",
+              "value": "={{ $('Consolidate Message4').item.json.contact_name }}",
+              "type": "string"
+            },
+            {
+              "id": "f1aba995-08b5-4ba2-a0a1-e1ac9715957d",
+              "name": "body.created_at",
+              "value": "={{ $('Webhook3').item.json.body.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "1280f276-7c42-43dc-8a8f-68a0ae0c2d9e",
+              "name": "phone_number",
+              "value": "={{ $('Extraer Datos2').item.json.phone_number }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        576,
+        512
+      ],
+      "id": "d45e5131-faac-4e2d-8a7d-c8f5d41da2a8",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        800,
+        864
+      ],
+      "id": "5a0f72e3-bcd2-477a-9ef6-6d8ded31c5f2",
+      "name": "Wait2",
+      "webhookId": "cba6edaa-d28d-479f-ae5f-3f25a7ee8dc7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "e37bde47-290a-4804-b638-41c1167685c0",
+              "leftValue": "={{ $('Webhook3').item.json.body.conversation.messages[0].sender_type }}",
+              "rightValue": "Contact",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        1280
+      ],
+      "id": "eee212c1-cb6e-4858-8651-44bfade873c4",
+      "name": "Ensure Conversation is IA2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        1088
+      ],
+      "id": "159aa21f-fbaf-478f-8020-52b130607923",
+      "name": "No Operation, do nothing2"
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=buffer_{{ $json.contact_id }}",
+        "messageData": "={{ JSON.stringify($json) }}",
+        "tail": true
+      },
+      "id": "6805ca90-6110-4172-a1f8-4ec024187683",
+      "name": "Push message buffer3",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        592,
+        864
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Lmnw94P0neM9dXL7",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "messages",
+        "key": "=buffer_{{ $('Extraer Datos2').item.json.contact_id }}",
+        "keyType": "list",
+        "options": {}
+      },
+      "id": "efb75861-372c-47e4-8f35-8417b8d48cbb",
+      "name": "Get message buffer3",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        960,
+        864
+      ],
+      "credentials": {
+        "redis": {
+          "id": "Lmnw94P0neM9dXL7",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1",
+              "name": "mensajes_concatenados",
+              "type": "string",
+              "value": "={{ $json.messages.map(msg => { try { let parsed = typeof msg === 'string' ? JSON.parse(msg) : msg; return parsed.final_message || parsed.mensaje || parsed.content || ''; } catch(e) { return typeof msg === 'string' ? msg : ''; } }).filter(m => m && m.trim() !== '').join('\\n\\n') }}"
+            },
+            {
+              "id": "2",
+              "name": "contact_name",
+              "type": "string",
+              "value": "={{ $('Extraer Datos2').item.json.contact_name }}"
+            },
+            {
+              "id": "3",
+              "name": "conversation_id",
+              "type": "number",
+              "value": "={{ $('Extraer Datos2').item.json.conversation_id }}"
+            },
+            {
+              "id": "4",
+              "name": "contact_id",
+              "type": "number",
+              "value": "={{ $('Extraer Datos2').item.json.contact_id }}"
+            },
+            {
+              "id": "5",
+              "name": "account_id",
+              "type": "number",
+              "value": "={{ $('Extraer Datos2').item.json.account_id }}"
+            },
+            {
+              "id": "6",
+              "name": "inbox_id",
+              "type": "number",
+              "value": "={{ $('Extraer Datos2').item.json.inbox_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1344,
+        608
+      ],
+      "id": "faaf2624-fe58-4bde-b868-898e7be3afd5",
+      "name": "concatenar mensajes para la IA3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-buffer-has-messages",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.messages && Array.isArray($json.messages) && $json.messages.length > 0 }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1136,
+        864
+      ],
+      "id": "b7179e30-528f-4b29-8be2-bec4883b94be",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "sessionKey": "={{ $('concatenar mensajes para la IA3').item.json.conversation_id }}",
+        "contextWindowLength": 70
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        1680,
+        1392
+      ],
+      "id": "85a69b3f-5b27-40dd-823e-04ba78e87620",
+      "name": "Postgres Chat Memory4",
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        1120
+      ],
+      "id": "e53fa2da-eacd-409c-ac3c-5673e0b5db6a",
+      "name": "Think4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The user {{ $('Consolidate Message4').item.json.contact_name }} sent the following message:{{ $('Consolidate Message4').item.json.final_message }}",
+        "options": {
+          "systemMessage": "=<YouAre>\n  Eres el **Agente de Soporte Técnico Experto 24/7** de la plataforma saledADS especializado en **Meta/Facebook Ads**.\n  No eres un vendedor. Eres un DIAGNOSTICADOR que interpreta síntomas vagos y encuentra soluciones precisas.\n  También tienes la capacidad de ESCALAR a un asesor humano cuando sea necesario.\n</YouAre>\n\n<CommunicationStyle>\n  1) **Empatía Inmediata:** Valida la frustración del usuario. \"Entiendo lo frustrante que es esto, vamos a resolverlo juntos.\"\n  2) **Brevedad con Claridad:** Respuestas concisas pero completas. Máximo 4-5 oraciones.\n  3) **Formato:** Usa negritas (**texto**) para resaltar pasos clave y títulos de error.\n  4) **Tono:** Profesional, paciente, confiable, como un experto técnico.\n</CommunicationStyle>\n\n<ProtocoloEscalacion_AsesorHumano>\n  **CUÁNDO ESCALAR A ASESOR HUMANO:**\n  1. El usuario PIDE EXPLÍCITAMENTE hablar con un humano/asesor/persona real\n  2. No puedes resolver el problema después de 2-3 intentos de solución\n  3. El problema es de facturación, reembolsos o pagos complejos\n  4. El usuario está muy frustrado y necesita atención personalizada\n  5. El caso requiere acceso a herramientas que no tienes\n\n  **CÓMO ESCALAR:**\n  - USA la herramienta `asignar_asesor_humano` con el motivo de escalación\n  - DESPUÉS de usar la herramienta, CONFIRMA al usuario:\n    \"✅ He asignado un asesor humano a tu caso. Te contactará muy pronto. ¡Gracias por tu paciencia!\"\n  - NO sigas respondiendo después de escalar. El asesor humano tomará el control.\n\n  **EJEMPLO DE ESCALACIÓN:**\n  Usuario: \"Quiero hablar con una persona real\"\n  Tú: [Usas herramienta asignar_asesor_humano con motivo \"Usuario solicita asesor\"]\n  Tú: \"✅ Entendido. He asignado un asesor humano a tu caso. Te contactará muy pronto para ayudarte personalmente. ¡Gracias por tu paciencia!\"\n</ProtocoloEscalacion_AsesorHumano>\n\n<ProtocoloOperativo_Diagnostico>\n  **FASE 1: ANÁLISIS DE SÍNTOMAS**\n  - Lee el mensaje del usuario. ¿Describe un problema técnico con síntomas? (ej: \"no me deja pagar\", \"video se queda cargando\", \"anuncio rechazado\")\n  - Si el usuario envió una imagen del error, analiza el código o mensaje visible en la captura.\n  - Identifica las palabras clave del síntoma.\n\n  **FASE 2: DIAGNÓSTICO (Match de Error)**\n  - USA la herramienta `Herramienta_Diagnostico_Errores` pasando los síntomas del usuario.\n  - La herramienta te devolverá el/los error(es) más probables con su error_id.\n  - Si hay VARIOS errores posibles (confidence media/baja), haz UNA pregunta aclaratoria al usuario:\n    * \"¿El error te aparece al intentar publicar o al configurar el pago?\"\n    * \"¿Esto sucede en Instagram, Facebook o ambos?\"\n  - Espera la respuesta del usuario antes de continuar.\n\n  **FASE 3: RECUPERACIÓN DE SOLUCIÓN DETALLADA**\n  - Una vez confirmado el error_id (o si la confidence es alta), USA la herramienta `Herramienta_Soluciones_RAG`.\n  - Pasa el TÍTULO del error o el TEMA del tutorial (ej: \"Configuración de Pagos\", \"Presupuesto demasiado bajo\").\n  - La herramienta te devolverá los pasos exactos de solución.\n\n  **FASE 4: RESPUESTA AL USUARIO**\n  - Estructura tu respuesta así:\n    1. **Validación:** \"Identificado: [Título del Error]\"\n    2. **Explicación breve:** \"Esto sucede porque...\"\n    3. **Solución paso a paso:** Lista numerada de 3-6 pasos clave (resume si son muchos pasos)\n    4. **Cierre empático:** \"¿Esto resolvió tu problema o necesitas más ayuda?\"\n\n  **CASOS ESPECIALES:**\n  - Si es un saludo: Saluda y pregunta \"¿Qué error o problema técnico estás enfrentando hoy?\"\n  - Si el usuario pregunta \"cómo hacer algo\" (no es un error): Usa `Herramienta_Soluciones_RAG` directamente con el tema.\n  - Si NO encuentras el error en la base de datos: \"No tengo este error específico en mi base de datos. ¿Podrías enviarme una captura de pantalla del mensaje de error completo? Si prefieres, puedo asignarte un asesor humano.\"\n</ProtocoloOperativo_Diagnostico>\n\n<ReglasOro>\n  - **NUNCA inventes soluciones.** Solo usa información de las herramientas.\n  - **SIEMPRE usa las herramientas** antes de responder sobre errores técnicos.\n  - Si el usuario sube una imagen, extrae el código de error visible y úsalo en el diagnóstico.\n  - Si hay ambigüedad, PREGUNTA antes de dar una solución incorrecta.\n  - Prioriza CALIDAD sobre velocidad: mejor una pregunta aclaratoria que una solución equivocada.\n  - **Si el usuario pide asesor humano, ESCALA inmediatamente sin intentar resolver primero.**\n</ReglasOro>\n\n<Exito>\n  El usuario recibe:\n  1. Diagnóstico preciso de su problema\n  2. Solución paso a paso clara y accionable\n  3. Escalación rápida a humano si es necesario\n  4. Sensación de ser atendido por un experto técnico\n</Exito>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1872,
+        1008
+      ],
+      "id": "7d6b3676-060c-4b6f-aeb8-1ecddea803b1",
+      "name": "AI Agent2",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        1360
+      ],
+      "id": "c9dae324-d6a7-4cb9-8f94-ed37bf5fba7e",
+      "name": "Google Gemini Chat Model7",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "zsNaRxVB6lIBu0hY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "#doble personass "
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1072,
+        1088
+      ],
+      "typeVersion": 1,
+      "id": "835545d5-309e-4002-a227-b179df7089b2",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "#doble personass "
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2032,
+        480
+      ],
+      "typeVersion": 1,
+      "id": "faf2ed01-10c2-4047-91b1-9f678e179b11",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO n8n_chat_histories (session_id, message)\nVALUES ($1, $2::jsonb);",
+        "options": {
+          "queryReplacement": "={{ [ $('Extraer Datos2').item.json.conversation_id.toString(), JSON.stringify({ type: 'human', content: $json.final_message, contact_name: $json.contact_name, phone_number: $json.phone_number, created_at: $json.body.created_at }) ] }}"
+        }
+      },
+      "id": "6a410eb5-0794-442e-a8c3-20f43d5d2e1f",
+      "name": "9. Guardar Mensaje en BD (SQL Query)6",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        976,
+        512
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "FwmkFpfddDCSr3tS",
+          "name": "supabase_Automatizacion_hetzner"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The user {{ $('Extract GHL Data').item.json.sender_name || '' }} sent the following message:\n\n{{ $json.response }}\n",
+        "options": {
+          "systemMessage": "=Eres el Asistente Principal de Enrutamiento de Soporte para SaleADS. Tu único trabajo es analizar la consulta del usuario y determinar el nombre exacto de la herramienta (Tool/Sub-Agente) que debe procesarla.\n\n**NO intentes responder la pregunta del usuario.** Tu salida debe ser estrictamente el nombre de la herramienta o el mensaje de cortesía predefinido.\n\n**HERRAMIENTAS DISPONIBLES (USAR SÓLO ESTOS NOMBRES):**\n* Sub_Agente_Errores_Meta\n* Sub_Agente_Configuraciones\n* SUBWORKFLOWCAPITANS\n\n**LÓGICA DE CLASIFICACIÓN (ESTRICTA):**\n\n1.  **USAR `SUBWORKFLOWCAPITANS` SI:** El usuario solicita explícitamente hablar con un \"humano\", \"asesor\", \"soporte técnico\" o \"persona real\".\n2.  **USAR `Sub_Agente_Errores_Meta` SI:** La consulta describe un problema que **detiene o falla** la operación de la plataforma o los anuncios. Esto incluye:\n    * Mencionar un código de error específico (ej: \"Error 100-1885272\", \"Anuncio rechazado\").\n    * Reportar que la cuenta o activo está bloqueado, inhabilitado o falló en el pago.\n    * Decir \"mi campaña falló\" o \"la IA no pudo publicar\".\n3.  **USAR `Sub_Agente_Configuraciones` SI:** La consulta trata sobre **cómo hacer algo por primera vez** o configurar un activo. Esto incluye:\n    * Preguntar por pasos de vinculación, permisos, o conexión inicial.\n    * Preguntar cómo crear Fan Page, Cuenta Publicitaria o Pixel.\n    * No hay un error explícito, sino una necesidad de instrucción.\n\n**FORMATO DE SALIDA CRÍTICO:**\nSi la consulta no encaja en las reglas 1, 2 o 3 (es un saludo o es irrelevante), tu salida debe ser **EXACTAMENTE** el siguiente mensaje de cortesía:\n\n\nSi el usuario saluda o dice algo fuera de contexto, responde amablemente y pide que describan su problema con Meta o qué configuración necesitan realizar.\n\n**CRÍTICO - FORMATO DE RESPUESTA:**\nCuando un Sub-Agente o la herramienta SUBWORKFLOWCAPITANS te devuelva una respuesta, tu respuesta final al usuario DEBE SER EXACTAMENTE la respuesta que recibiste, palabra por palabra, sin agregar comentarios tuyos como \"He derivado tu caso\" o \"El especialista te ayudará\". Tu único trabajo es ejecutar la herramienta correcta y retornar su respuesta (output) directamente."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        1248,
+        1888
+      ],
+      "id": "022a4e2f-1110-4ace-b403-f676d0337080",
+      "name": "Agente_Orquestador",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Gemini Chat Model (Configuraciones)": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model (Errores)": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Delete message buffer": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model (Errores)1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta_2_segunda_etapa",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model (Configuraciones)1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones_segunda_etapa",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres_Buscar_Error": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta_2_segunda_etapa",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres_Buscar_Configuracion": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones_segunda_etapa",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "code_buscar_error_meta": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta_2_segunda_etapa",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_configuracion": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones_segunda_etapa",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_error_meta": {
+      "ai_tool": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta_2_segunda_etapa",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub_Agente_Errores_Meta": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sub_Agente_Configuraciones": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sub_Agente_Errores_Meta",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Sub_Agente_Configuraciones",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "chatwoot-widget-webhook": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensajes Entrantes2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Delete message buffer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Herramienta_Asignar_Asesor": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensajes Entrantes2": {
+      "main": [
+        [
+          {
+            "node": "Extraer Datos2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Datos2": {
+      "main": [
+        [
+          {
+            "node": "Consultar Etiquetas3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiene Etiqueta Asesor2": {
+      "main": [
+        [
+          {
+            "node": "Stop - Asesor Activo (No Responder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Message Type Router3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Image URL is Ready3": {
+      "main": [
+        [
+          {
+            "node": "Download Image3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Audio URL is Ready3": {
+      "main": [
+        [
+          {
+            "node": "Download Audio3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Video URL is Ready3": {
+      "main": [
+        [
+          {
+            "node": "Download Video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image3": {
+      "main": [
+        [
+          {
+            "node": "Analyze Image3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio3": {
+      "main": [
+        [
+          {
+            "node": "Transcribe Audio3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video3": {
+      "main": [
+        [
+          {
+            "node": "Analyze Video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Image3": {
+      "main": [
+        [
+          {
+            "node": "Format Image Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe Audio3": {
+      "main": [
+        [
+          {
+            "node": "Format Audio Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Video3": {
+      "main": [
+        [
+          {
+            "node": "Format Video Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Analyze Image3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Image Response3": {
+      "main": [
+        [
+          {
+            "node": "Consolidate Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Audio Response3": {
+      "main": [
+        [
+          {
+            "node": "Consolidate Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Video Response3": {
+      "main": [
+        [
+          {
+            "node": "Consolidate Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Type Router3": {
+      "main": [
+        [
+          {
+            "node": "Ensure Image URL is Ready3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ensure Audio URL is Ready3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ensure Video URL is Ready3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Text Response4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Text Response4": {
+      "main": [
+        [
+          {
+            "node": "Consolidate Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consolidate Message4": {
+      "main": [
+        [
+          {
+            "node": "Is it an Incoming User Message?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consultar Etiquetas3": {
+      "main": [
+        [
+          {
+            "node": "Tiene Etiqueta Asesor2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Message for Logging2": {
+      "main": [
+        [
+          {
+            "node": "9. Guardar Mensaje en BD (SQL Query)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Manual Attention Required?2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Push message buffer3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is it an Incoming User Message?2": {
+      "main": [
+        [
+          {
+            "node": "Is Manual Attention Required?2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ensure Conversation is IA2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "9. Guardar Mensaje en BD (SQL Query)6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Get message buffer3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ensure Conversation is IA2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prepare AI Message for Logging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push message buffer3": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get message buffer3": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "concatenar mensajes para la IA3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "concatenar mensajes para la IA3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory4": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think4": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente_Orquestador": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6fe2b33b-e273-4255-a6ce-7c29a425f7e6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb1f590c3ac7b82c704132798dd0c6e5346a08cecdcabba3350bfc2335903a88"
+  },
+  "id": "obrK2Xs9esjYHSrO",
+  "tags": []
+}

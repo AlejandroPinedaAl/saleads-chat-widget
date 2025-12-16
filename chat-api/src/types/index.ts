@@ -34,6 +34,11 @@ export interface SocketData {
 export interface UserMessageData {
   sessionId: string;
   message: string;
+  attachments?: Array<{
+    type: 'image' | 'audio' | 'video' | 'file';
+    url: string;
+    fileSize?: number;
+  }>;
   metadata?: {
     userAgent?: string;
     pageUrl?: string;
@@ -266,14 +271,14 @@ export interface RateLimitInfo {
 export interface AppConfig {
   port: number;
   nodeEnv: 'development' | 'production' | 'test';
-  
+
   chatwoot: {
     apiUrl: string;
     apiKey: string;
     accountId: string;
     inboxId: string;
   };
-  
+
   ghl: {
     apiKey: string;
     locationId: string;
@@ -286,30 +291,32 @@ export interface AppConfig {
     enabled: boolean;
     timeout: number;
   };
-  
+
+  publicUrl: string;
+
   redis: {
     url: string;
     token: string;
   };
-  
+
   security: {
     webhookSecret: string;
     jwtSecret: string;
     corsOrigins: string[];
   };
-  
+
   socket: {
     pingTimeout: number;
     pingInterval: number;
     maxConnections: number;
   };
-  
+
   rateLimit: {
     messagesPerMinute: number;
     messagesPerHour: number;
     windowMs: number;
   };
-  
+
   logging: {
     level: string;
     format: 'json' | 'simple';

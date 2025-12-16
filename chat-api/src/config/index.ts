@@ -65,13 +65,16 @@ export const config: AppConfig = {
     apiUrl: getEnv('GHL_API_URL', 'https://services.leadconnectorhq.com'),
   },
 
-  // n8n Integration (Direct Webhook)
+  // N8N Integration (Direct Webhook)
   n8n: {
     webhookUrl: getEnv('N8N_WEBHOOK_URL', ''),
     webhookSecret: getEnv('N8N_WEBHOOK_SECRET', ''),
     enabled: getEnv('N8N_DIRECT_ENABLED', 'true') === 'true',
     timeout: getEnvNumber('N8N_TIMEOUT', 30000),
   },
+
+  // Public URL for attachments
+  publicUrl: getEnv('PUBLIC_URL', 'http://localhost:3000'),
 
   // Redis (Upstash)
   redis: {

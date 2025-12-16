@@ -15,6 +15,11 @@ export interface N8NMessagePayload {
   email?: string;
   firstName?: string;
   lastName?: string;
+  attachments?: Array<{
+    type: 'image' | 'audio' | 'video' | 'file';
+    url: string;
+    fileSize?: number;
+  }>;
   metadata?: {
     userAgent?: string;
     pageUrl?: string;
@@ -96,6 +101,20 @@ class N8NService {
   }
 
   /**
+   * Generar un ID numérico a partir de un string (hash)
+   * N8N espera IDs numéricos para conversation_id y contact_id
+   */
+  private generateNumericId(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return Math.abs(hash);
+  }
+
+  /**
    * Enviar mensaje del usuario a n8n
    */
   async sendMessage(payload: N8NMessagePayload): Promise<N8NResponse> {
@@ -105,17 +124,90 @@ class N8NService {
     }
 
     try {
+      // Generar IDs numéricos basados en strings
+      const conversationId = this.generateNumericId(payload.sessionId);
+      const contactId = payload.contactId
+        ? this.generateNumericId(payload.contactId)
+        : this.generateNumericId(payload.sessionId + '_contact');
+
+      const inboxId = config.chatwoot.inboxId ? parseInt(config.chatwoot.inboxId) : 5; // Default fallback
+      const accountId = config.chatwoot.accountId ? parseInt(config.chatwoot.accountId) : 1; // Default fallback
+
+      // Construir payload compatible con Chatwoot
+      // Estructura:
+      // {
+      //   body: {
+      //     message_type: 'incoming',
+      //     content: "Hola",
+      //     conversation: { id: 123, status: "open" },
+      //     sender: { id: 456, name: "Usuario", phone_number: "+57..." },
+      //     account: { id: 1 },
+      //     inbox: { id: 5 },
+      //     attachments: [...]
+      //   }
+      // }
+
+      // Preparar attachments si existen
+      const attachments = payload.attachments?.map(att => {
+        // Asegurar que la URL sea absoluta/pública
+        let dataUrl = att.url;
+        if (dataUrl.startsWith('/')) {
+          dataUrl = `${config.publicUrl}${dataUrl}`;
+        }
+
+        return {
+          file_type: att.type,
+          data_url: dataUrl,
+          file_size: att.fileSize || 0
+        };
+      }) || [];
+
+      // Nombre del remitente
+      const senderName = payload.firstName && payload.lastName
+        ? `${payload.firstName} ${payload.lastName}`
+        : payload.firstName || payload.lastName || 'Usuario Web';
+
       const requestPayload = {
-        ...payload,
-        timestamp: payload.metadata?.timestamp || new Date().toISOString(),
-        source: 'widget',
+        body: {
+          message_type: 'incoming',
+          content: payload.message || null,
+          conversation: {
+            id: conversationId,
+            status: 'open',
+            custom_attributes: {
+              sessionId: payload.sessionId, // Mantener el sessionId original
+              pageUrl: payload.metadata?.pageUrl
+            }
+          },
+          sender: {
+            id: contactId,
+            name: senderName,
+            // Usamos el teléfono real o el sessionId como fallback para identificación
+            phone_number: payload.phone || payload.sessionId,
+            email: payload.email,
+            custom_attributes: {
+              sessionId: payload.sessionId // Redundancia útil
+            }
+          },
+          account: { id: accountId },
+          inbox: { id: inboxId },
+          ...(attachments.length > 0 && { attachments }),
+
+          // Metadatos adicionales nuestros (por si acaso el flujo cambia para usarlos)
+          metadata: {
+            sessionId: payload.sessionId,
+            timestamp: payload.metadata?.timestamp || new Date().toISOString(),
+            ...payload.metadata
+          },
+          source: 'widget'
+        }
       };
 
       logger.info('[N8NService] Sending message to n8n', {
         sessionId: payload.sessionId,
-        messageLength: payload.message.length,
-        hasContactId: !!payload.contactId,
-        hasPhone: !!payload.phone,
+        conversationId,
+        messageLength: payload.message?.length || 0,
+        hasAttachments: attachments.length > 0
       });
 
       const response = await this.client.post('', requestPayload);

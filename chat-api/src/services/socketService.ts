@@ -130,12 +130,12 @@ class SocketService {
       // Event: Mensaje del usuario
       socket.on('user-message', async (data: UserMessageData) => {
         try {
-          const { sessionId, message, metadata } = data;
+          const { sessionId, message, attachments, metadata } = data;
 
-          if (!sessionId || !message) {
+          if (!sessionId || (!message && (!attachments || attachments.length === 0))) {
             socket.emit('error', {
               code: 'INVALID_MESSAGE',
-              message: 'Session ID and message are required',
+              message: 'Session ID and message (or attachment) are required',
             });
             return;
           }
@@ -223,24 +223,24 @@ class SocketService {
           // ========== GUARDAR MENSAJE EN CHATWOOT ==========
           // Guardar mensaje del usuario en Chatwoot
           if (chatwootService.isEnabled() && conversationId) {
-                try {
+            try {
               await chatwootService.sendMessage({
                 conversationId,
                 content: message,
                 messageType: 'incoming',
                 contentType: 'text',
-                  });
+              });
 
               logger.info('[SocketService] User message saved to Chatwoot', {
                 sessionId,
                 conversationId,
-                  });
+              });
             } catch (error: any) {
               logger.error('[SocketService] Error saving message to Chatwoot', {
                 sessionId,
                 conversationId,
                 error: error.message,
-                  });
+              });
               // No bloquear el flujo si falla Chatwoot
             }
           }
@@ -262,12 +262,13 @@ class SocketService {
                   conversationId: conversationId?.toString(),
                   timestamp: new Date().toISOString(),
                 },
+                attachments,
               });
 
               if (n8nResult.success) {
                 logger.info('[SocketService] Message sent to n8n for AI processing', {
-                sessionId,
-                contactId,
+                  sessionId,
+                  contactId,
                   conversationId,
                   messageId: n8nResult.messageId,
                 });
@@ -275,7 +276,7 @@ class SocketService {
                 logger.warn('[SocketService] n8n returned error', {
                   sessionId,
                   error: n8nResult.error,
-              });
+                });
               }
             } catch (error: any) {
               logger.error('[SocketService] Error sending message to n8n', {
@@ -348,7 +349,7 @@ class SocketService {
     if (chatwootService.isEnabled() && data.metadata?.conversationId) {
       try {
         const conversationId = parseInt(data.metadata.conversationId as string, 10);
-        
+
         if (!isNaN(conversationId)) {
           await chatwootService.sendMessage({
             conversationId,
