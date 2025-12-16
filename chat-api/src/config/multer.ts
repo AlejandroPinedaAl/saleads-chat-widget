@@ -24,7 +24,7 @@ const fileFilter = (_req: any, file: Express.Multer.File, cb: multer.FileFilterC
     const allowedTypes = [
         'image/jpeg', 'image/png', 'image/webp', 'image/gif',
         'audio/mpeg', 'audio/wav', 'audio/webm',
-        'video/mp4', 'video/webm'
+        'video/mp4', 'video/webm', 'video/quicktime'
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
@@ -38,6 +38,6 @@ export const upload = multer({
     storage: storage,
     fileFilter: fileFilter,
     limits: {
-        fileSize: 20 * 1024 * 1024 // 20MB limit
+        fileSize: 50 * 1024 * 1024 // 50MB limit
     }
 });
