@@ -88,6 +88,7 @@ export interface ChatwootConversation {
   contact_id?: number;
   status: 'open' | 'resolved' | 'pending';
   messages?: ChatwootMessage[];
+  labels?: string[];
   custom_attributes?: Record<string, any>;
   created_at?: string;
   timestamp?: number;

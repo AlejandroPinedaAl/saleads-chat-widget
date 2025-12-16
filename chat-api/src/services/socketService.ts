@@ -166,6 +166,7 @@ class SocketService {
           // Crear o obtener contacto en Chatwoot
           let contactId = session?.contactId || '';
           let conversationId: number | null = null;
+          let conversationLabels: string[] | undefined = undefined;
 
           if (chatwootService.isEnabled()) {
             try {
@@ -193,6 +194,7 @@ class SocketService {
               );
 
               conversationId = conversation.id;
+              conversationLabels = conversation.labels;
 
               // Actualizar sesión con contactId y conversationId
               await redisService.setSession(sessionId, {
@@ -260,6 +262,7 @@ class SocketService {
                 // Pasar IDs reales
                 conversationId: conversationId || undefined,
                 chatwootContactId: contactId ? parseInt(contactId, 10) : undefined,
+                labels: conversationLabels,
                 metadata: {
                   ...metadata,
                   conversationId: conversationId?.toString(),

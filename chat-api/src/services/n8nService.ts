@@ -14,6 +14,7 @@ export interface N8NMessagePayload {
   // Nuevos campos opcionales para IDs reales de Chatwoot
   conversationId?: number;
   chatwootContactId?: number;
+  labels?: string[];
   phone?: string;
   email?: string;
   firstName?: string;
@@ -179,6 +180,7 @@ class N8NService {
         conversation: {
           id: conversationId,
           status: 'open',
+          labels: payload.labels,
           custom_attributes: {
             sessionId: payload.sessionId, // Mantener el sessionId original
             pageUrl: payload.metadata?.pageUrl
