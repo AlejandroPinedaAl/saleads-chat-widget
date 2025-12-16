@@ -23,7 +23,8 @@ export function createApp(): Express {
   const app = express();
 
   // Trust proxy (necesario cuando hay reverse proxy como Nginx)
-  app.set('trust proxy', true);
+  // Trust proxy (necesario cuando hay reverse proxy como Nginx)
+  app.set('trust proxy', 1);
 
   // ============================================
   // SECURITY MIDDLEWARES
@@ -43,7 +44,8 @@ export function createApp(): Express {
     cors({
       origin: (origin, callback) => {
         // Permitir requests sin origin (mobile apps, Postman, etc.)
-        if (!origin) {
+        // Permitir requests sin origin (mobile apps, Postman, etc.) o local files ('null')
+        if (!origin || origin === 'null') {
           callback(null, true);
           return;
         }
