@@ -168,39 +168,37 @@ class N8NService {
         : payload.firstName || payload.lastName || 'Usuario Web';
 
       const requestPayload = {
-        body: {
-          message_type: 'incoming',
-          content: payload.message || null,
-          conversation: {
-            id: conversationId,
-            status: 'open',
-            custom_attributes: {
-              sessionId: payload.sessionId, // Mantener el sessionId original
-              pageUrl: payload.metadata?.pageUrl
-            }
-          },
-          sender: {
-            id: contactId,
-            name: senderName,
-            // Usamos el teléfono real o el sessionId como fallback para identificación
-            phone_number: payload.phone || payload.sessionId,
-            email: payload.email,
-            custom_attributes: {
-              sessionId: payload.sessionId // Redundancia útil
-            }
-          },
-          account: { id: accountId },
-          inbox: { id: inboxId },
-          ...(attachments.length > 0 && { attachments }),
+        message_type: 'incoming',
+        content: payload.message || null,
+        conversation: {
+          id: conversationId,
+          status: 'open',
+          custom_attributes: {
+            sessionId: payload.sessionId, // Mantener el sessionId original
+            pageUrl: payload.metadata?.pageUrl
+          }
+        },
+        sender: {
+          id: contactId,
+          name: senderName,
+          // Usamos el teléfono real o el sessionId como fallback para identificación
+          phone_number: payload.phone || payload.sessionId,
+          email: payload.email,
+          custom_attributes: {
+            sessionId: payload.sessionId // Redundancia útil
+          }
+        },
+        account: { id: accountId },
+        inbox: { id: inboxId },
+        ...(attachments.length > 0 && { attachments }),
 
-          // Metadatos adicionales nuestros (por si acaso el flujo cambia para usarlos)
-          metadata: {
-            sessionId: payload.sessionId,
-            timestamp: payload.metadata?.timestamp || new Date().toISOString(),
-            ...payload.metadata
-          },
-          source: 'widget'
-        }
+        // Metadatos adicionales nuestros (por si acaso el flujo cambia para usarlos)
+        metadata: {
+          sessionId: payload.sessionId,
+          timestamp: payload.metadata?.timestamp || new Date().toISOString(),
+          ...payload.metadata
+        },
+        source: 'widget'
       };
 
       logger.info('[N8NService] Sending message to n8n', {
