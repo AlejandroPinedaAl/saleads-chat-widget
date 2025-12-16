@@ -13,12 +13,10 @@ import {
 import { translations } from '@/types';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { PhoneCapture } from './PhoneCapture';
 
 export const ChatWindow: React.FC = () => {
   const isOpen = useChatStore(selectIsOpen);
   const isConnected = useChatStore(selectIsConnected);
-  const phoneCaptured = useChatStore((state) => state.phoneCaptured);
   const config = useChatStore(selectConfig);
   const setIsOpen = useChatStore((state) => state.setIsOpen);
 
@@ -66,9 +64,8 @@ export const ChatWindow: React.FC = () => {
             </span>
             <div className="sw-flex sw-items-center sw-gap-1 sw-text-xs sw-opacity-90">
               <div
-                className={`sw-w-2 sw-h-2 sw-rounded-full ${
-                  isConnected ? 'sw-bg-green-400' : 'sw-bg-red-400'
-                }`}
+                className={`sw-w-2 sw-h-2 sw-rounded-full ${isConnected ? 'sw-bg-green-400' : 'sw-bg-red-400'
+                  }`}
               />
               <span>{isConnected ? t.online : t.offline}</span>
             </div>
@@ -95,17 +92,9 @@ export const ChatWindow: React.FC = () => {
         </div>
       </div>
 
-      {/* Body - Captura de teléfono o chat */}
-      {!phoneCaptured ? (
-        <PhoneCapture />
-      ) : (
-        <>
-          {/* Lista de mensajes */}
-          <MessageList />
-          {/* Input de mensaje */}
-          <MessageInput />
-        </>
-      )}
+      {/* Body - Chat Instantáneo (PhoneCapture eliminado/movido) */}
+      <MessageList />
+      <MessageInput />
 
       {/* GDPR Notice (si está habilitado) */}
       {config.gdprNotice && (

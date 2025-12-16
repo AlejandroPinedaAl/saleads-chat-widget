@@ -6,7 +6,7 @@
 // MESSAGE TYPES
 // ============================================
 
-export type MessageType = 'user' | 'agent' | 'system';
+export type MessageType = 'user' | 'agent' | 'system' | 'image' | 'video' | 'audio';
 export type MessageStatus = 'sending' | 'sent' | 'error';
 
 export interface Message {

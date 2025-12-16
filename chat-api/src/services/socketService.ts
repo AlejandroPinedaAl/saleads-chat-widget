@@ -223,24 +223,24 @@ class SocketService {
           // ========== GUARDAR MENSAJE EN CHATWOOT ==========
           // Guardar mensaje del usuario en Chatwoot
           if (chatwootService.isEnabled() && conversationId) {
-            try {
+                try {
               await chatwootService.sendMessage({
                 conversationId,
                 content: message,
                 messageType: 'incoming',
                 contentType: 'text',
-              });
+                  });
 
               logger.info('[SocketService] User message saved to Chatwoot', {
                 sessionId,
                 conversationId,
-              });
+                  });
             } catch (error: any) {
               logger.error('[SocketService] Error saving message to Chatwoot', {
                 sessionId,
                 conversationId,
                 error: error.message,
-              });
+                  });
               // No bloquear el flujo si falla Chatwoot
             }
           }
@@ -266,8 +266,8 @@ class SocketService {
 
               if (n8nResult.success) {
                 logger.info('[SocketService] Message sent to n8n for AI processing', {
-                  sessionId,
-                  contactId,
+                sessionId,
+                contactId,
                   conversationId,
                   messageId: n8nResult.messageId,
                 });
@@ -275,7 +275,7 @@ class SocketService {
                 logger.warn('[SocketService] n8n returned error', {
                   sessionId,
                   error: n8nResult.error,
-                });
+              });
               }
             } catch (error: any) {
               logger.error('[SocketService] Error sending message to n8n', {

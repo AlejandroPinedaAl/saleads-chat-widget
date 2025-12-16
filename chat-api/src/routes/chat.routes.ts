@@ -14,6 +14,7 @@ import { n8nService } from '../services/n8nService.js';
 import { logger } from '../utils/logger.js';
 import { validate, userMessageSchema, n8nWebhookSchema } from '../utils/validators.js';
 import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
+import { upload } from '../config/multer.js';
 
 const router = Router();
 
@@ -290,7 +291,7 @@ router.post(
 
         // Buscar la sesión asociada a esta conversación
         const conversationId = payload.conversation?.id.toString();
-        
+
         if (conversationId) {
           // Buscar sesión por conversationId en metadata
           // Nota: Esto requeriría un índice secundario en Redis o iterar sesiones
@@ -461,6 +462,42 @@ router.get(
       success: true,
       data: session,
       timestamp: new Date().toISOString(),
+    });
+  })
+);
+
+/**
+ * POST /api/chat/upload
+ * Subir archivos (imágenes, audio, video)
+ */
+router.post(
+  '/upload',
+  upload.single('file'),
+  asyncHandler(async (req: Request, res: Response) => {
+    if (!req.file) {
+      res.status(400).json({
+        success: false,
+        error: 'No file uploaded',
+      });
+      return;
+    }
+
+    // Construir URL completa
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+
+    logger.info('[ChatRoutes] File uploaded', {
+      filename: req.file.filename,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+    });
+
+    res.json({
+      success: true,
+      url: fileUrl,
+      mimetype: req.file.mimetype,
+      filename: req.file.filename,
+      size: req.file.size,
     });
   })
 );

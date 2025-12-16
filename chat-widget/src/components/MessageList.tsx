@@ -38,6 +38,10 @@ export const MessageList: React.FC = () => {
     const isUser = message.type === 'user';
     const isSystem = message.type === 'system';
 
+    // Tipos multimedia se tratan como mensajes de usuario o agente según el origen, 
+    // pero aquí asumimos que si no es system, se renderiza en burbuja
+
+
     // Mensaje del sistema (errores, notificaciones)
     if (isSystem) {
       return (
@@ -52,9 +56,8 @@ export const MessageList: React.FC = () => {
     return (
       <div
         key={message.id}
-        className={`sw-flex sw-items-start sw-gap-2 sw-px-4 sw-py-2 ${
-          isUser ? 'sw-flex-row-reverse' : 'sw-flex-row'
-        }`}
+        className={`sw-flex sw-items-start sw-gap-2 sw-px-4 sw-py-2 ${isUser ? 'sw-flex-row-reverse' : 'sw-flex-row'
+          }`}
       >
         {/* Avatar (solo para mensajes del agente) */}
         {!isUser && (
@@ -78,35 +81,51 @@ export const MessageList: React.FC = () => {
 
         {/* Contenido del mensaje */}
         <div
-          className={`sw-flex sw-flex-col sw-gap-1 ${
-            isUser ? 'sw-items-end' : 'sw-items-start'
-          } sw-max-w-[75%]`}
+          className={`sw-flex sw-flex-col sw-gap-1 ${isUser ? 'sw-items-end' : 'sw-items-start'
+            } sw-max-w-[75%]`}
         >
           {/* Burbuja del mensaje */}
           <div
-            className={`sw-rounded-2xl sw-px-4 sw-py-2 sw-break-words ${
-              isUser
-                ? 'sw-text-white sw-rounded-tr-none'
-                : 'sw-bg-gray-100 sw-text-gray-900 sw-rounded-tl-none'
-            }`}
+            className={`sw-rounded-2xl sw-px-4 sw-py-2 sw-break-words ${isUser
+              ? 'sw-text-white sw-rounded-tr-none'
+              : 'sw-bg-gray-100 sw-text-gray-900 sw-rounded-tl-none'
+              }`}
             style={{
               backgroundColor: isUser ? config.primaryColor || '#3B82F6' : undefined,
             }}
           >
-            {/* Contenido con soporte básico para markdown */}
-            <div
-              className="sw-text-sm sw-whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{
-                __html: formatMessageContent(message.content),
-              }}
-            />
+            {/* Contenido multimedia o texto */}
+            {message.type === 'image' ? (
+              <img
+                src={message.content}
+                alt="Imagen adjunta"
+                className="sw-max-w-full sw-rounded-lg sw-cursor-pointer hover:sw-opacity-90"
+                onClick={() => window.open(message.content, '_blank')}
+                style={{ maxHeight: '200px' }}
+              />
+            ) : message.type === 'video' ? (
+              <video
+                src={message.content}
+                controls
+                className="sw-max-w-full sw-rounded-lg"
+                style={{ maxHeight: '200px' }}
+              />
+            ) : message.type === 'audio' ? (
+              <audio src={message.content} controls className="sw-w-full sw-min-w-[200px]" />
+            ) : (
+              <div
+                className="sw-text-sm sw-whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{
+                  __html: formatMessageContent(message.content),
+                }}
+              />
+            )}
           </div>
 
           {/* Timestamp y estado */}
           <div
-            className={`sw-flex sw-items-center sw-gap-1 sw-text-xs sw-text-gray-500 sw-px-2 ${
-              isUser ? 'sw-flex-row-reverse' : 'sw-flex-row'
-            }`}
+            className={`sw-flex sw-items-center sw-gap-1 sw-text-xs sw-text-gray-500 sw-px-2 ${isUser ? 'sw-flex-row-reverse' : 'sw-flex-row'
+              }`}
           >
             <span>{formatTime(message.timestamp)}</span>
 

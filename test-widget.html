@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Local Widget SaleAds</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f2f5;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #4a5568;
+            line-height: 1.6;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2563EB;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Prueba de Widget SaleAds</h1>
+        <p>Este es un entorno de prueba para verificar la integración completa con el backend y n8n.</p>
+
+        <div class="code-block">
+            <pre>Estado: Esperando conexión...</pre>
+        </div>
+
+        <button onclick="window.SaleAdsWidget.open()">Abrir Chat</button>
+    </div>
+
+    <!-- Script de configuración -->
+    <script>
+        window.saleadsConfig = {
+            // URL de tu Backend (Nginx Proxy)
+            apiUrl: 'http://95.216.196.74:8080',
+
+            // Session ID fijo para facilitar el debugging en n8n
+            sessionId: 'test-real-001',
+
+            // Datos del cliente de prueba
+            client: {
+                name: 'Usuario Prueba',
+                email: 'test@example.com'
+            },
+
+            position: 'bottom-right',
+            primaryColor: '#3B82F6',
+            language: 'es'
+        };
+    </script>
+
+    <!-- 
+      IMPORTANTE:
+      Para que esto funcione debes tener los archivos 'widget.js' y 'widget.css' 
+      accesibles. Lo ideal es correr 'npm run build' en la carpeta chat-widget
+      y luego servir este HTML.
+    -->
+
+    <!-- Carga del Widget (Compilado) -->
+    <script src="./chat-widget/dist/widget-loader.js"></script>
+
+    <script>
+        // Listeners para debugging
+        window.addEventListener('saleads:loaded', () => {
+            console.log('✅ Widget cargado correctamente');
+            document.querySelector('.code-block pre').textContent = 'Estado: Widget Cargado ✅';
+        });
+
+        window.addEventListener('saleads:error', (e) => {
+            console.error('❌ Error:', e.detail);
+            document.querySelector('.code-block pre').textContent = 'Estado: Error de carga ❌';
+        });
+
+        // Debug de conexión socket (necesitas exponer esto en tu widget.js o verlo en network)
+    </script>
+</body>
+
+</html>

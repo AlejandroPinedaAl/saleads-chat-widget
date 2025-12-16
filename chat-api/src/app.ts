@@ -34,6 +34,7 @@ export function createApp(): Express {
     helmet({
       contentSecurityPolicy: false, // Deshabilitado para permitir WebSocket
       crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: "cross-origin" },
     })
   );
 
@@ -98,6 +99,9 @@ export function createApp(): Express {
   // ============================================
   // ROUTES
   // ============================================
+
+  // Servir archivos estáticos (uploads)
+  app.use('/uploads', express.static('uploads'));
 
   // Root endpoint
   app.get('/', (_req, res) => {

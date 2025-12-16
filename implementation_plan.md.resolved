@@ -1,0 +1,80 @@
+# Plan de Implementación: Chat Instantáneo y Soporte Multimedia
+
+Este documento detalla los pasos técnicos exactos para implementar las nuevas mejoras, basándonos en la arquitectura actual verificada.
+
+## ✅ Confirmaciones Previas
+1.  **Session IDs:** Ya tenemos IDs únicos generados automáticamente en [chatStore.ts](file:///c:/Developer/Widget%20soporte/chat-widget/src/store/chatStore.ts) (ej: `session_1739...`). No necesitamos crear esta lógica, solo aprovecharla.
+2.  **Almacenamiento:** Usaremos el servidor local (`/uploads` en `chat-api`) para guardar imágenes, audios y videos.
+3.  **Componentes:** El formulario de teléfono actual es [PhoneCapture.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/PhoneCapture.tsx).
+
+---
+
+## Fase 1: Backend - Infraestructura de Archivos ⚙️
+**Objetivo:** Permitir que la API reciba y guarde archivos.
+
+#### 1.1 Configurar Multer (Gestor de Archivos)
+-   **Archivo:** `chat-api/src/config/multer.ts` (Nuevo)
+-   **Acción:** Configurar almacenamiento en disco.
+    -   Carpeta destino: `./uploads` (se creará automáticamente).
+    -   Nombres de archivo: `timestamp-originalName` (para evitar duplicados).
+    -   Filtros: Aceptar imágenes (jpg, png, wepb), audio (mp3, wav, webm) y video (mp4).
+
+#### 1.2 Exponer Carpeta Pública
+-   **Archivo:** [chat-api/src/app.ts](file:///c:/Developer/Widget%20soporte/chat-api/src/app.ts)
+-   **Acción:** Agregar línea para servir archivos estáticos:
+    -   `app.use('/uploads', express.static('uploads'));`
+-   **Resultado:** Los archivos serán accesibles en `http://servidor:puerto/uploads/archivo.jpg`.
+
+#### 1.3 Nuevo Endpoint de Subida
+-   **Archivo:** [chat-api/src/routes/chat.routes.ts](file:///c:/Developer/Widget%20soporte/chat-api/src/routes/chat.routes.ts)
+-   **Acción:** Crear ruta `POST /upload`.
+    -   Usa middleware `upload.single('file')`.
+    -   Retorna: `{ success: true, url: '...', type: 'image/jpeg' }`.
+
+---
+
+## Fase 2: Frontend - Chat Instantáneo y Multimedia 🚀
+**Objetivo:** Eliminar el bloqueo inicial y permitir envíos multimedia.
+
+#### 2.1 Eliminar Barrera de Entrada ("Chat Instantáneo")
+-   **Archivo:** [chat-widget/src/components/ChatWindow.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/ChatWindow.tsx)
+-   **Acción:**
+    -   Buscar la condición que muestra `<PhoneCapture />`.
+    -   Modificarla para que **NO** bloquee la vista del chat.
+    -   El usuario podrá ver y escribir mensajes desde el segundo 0 usando su `sessionId` automático.
+
+#### 2.2 UI de Mensajes Multimedia
+-   **Archivo:** [chat-widget/src/components/MessageList.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/MessageList.tsx)
+-   **Acción:** Actualizar el renderizado de mensajes.
+    -   Si `message.type === 'image'`: Mostrar etiqueta `<img>`.
+    -   Si `message.type === 'video'`: Mostrar etiqueta `<video>`.
+    -   Si `message.type === 'audio'`: Mostrar etiqueta `<audio>` o reproductor simple.
+
+#### 2.3 Botones de Adjuntar
+-   **Archivo:** [chat-widget/src/components/MessageInput.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/MessageInput.tsx)
+-   **Acción:**
+    -   Agregar botón "Clip" 📎 (Input file oculto) para imágenes/videos.
+    -   Agregar botón "Micrófono" 🎙️ para grabar audio (usando `MediaRecorder` API del navegador).
+    -   Lógica de envío:
+        1. Subir archivo al endpoint `/api/chat/upload`.
+        2. Al recibir la URL, enviar mensaje por Socket con `{ type: 'image', content: 'url...' }`.
+
+---
+
+## Fase 3: Integración con n8n 🧠
+**Objetivo:** Que el cerebro entienda los nuevos tipos de mensaje.
+
+#### 3.1 Actualizar "Message Router" en n8n
+-   **Acción:** Modificar tu workflow actual para manejar tipos.
+    -   **Nodo Switch:**
+        -   Ruta 0 (Texto): Flujo actual con Gemini.
+        -   Ruta 1 (Imagen): Nodo "Gemini Vision" (analiza la imagen).
+        -   Ruta 2 (Audio): Nodo "Whisper" (transcribe a texto).
+    -   El Frontend enviará el campo `type` en el JSON, lo usaremos para filtrar.
+
+## Resumen de Archivos a Tocar
+1.  [chat-api/src/app.ts](file:///c:/Developer/Widget%20soporte/chat-api/src/app.ts) (Servir uploads)
+2.  [chat-api/package.json](file:///c:/Developer/Widget%20soporte/chat-api/package.json) (Instalar multer)
+3.  [chat-widget/src/components/ChatWindow.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/ChatWindow.tsx) (Quitar PhoneCapture)
+4.  [chat-widget/src/components/MessageInput.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/MessageInput.tsx) (Botones media)
+5.  [chat-widget/src/components/MessageList.tsx](file:///c:/Developer/Widget%20soporte/chat-widget/src/components/MessageList.tsx) (Ver fotos/videos)
