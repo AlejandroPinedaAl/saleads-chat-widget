@@ -257,6 +257,9 @@ class SocketService {
                 email: metadata?.email,
                 firstName: metadata?.firstName,
                 lastName: metadata?.lastName,
+                // Pasar IDs reales
+                conversationId: conversationId || undefined,
+                chatwootContactId: contactId ? parseInt(contactId, 10) : undefined,
                 metadata: {
                   ...metadata,
                   conversationId: conversationId?.toString(),

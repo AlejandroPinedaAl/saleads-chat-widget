@@ -11,6 +11,9 @@ export interface N8NMessagePayload {
   sessionId: string;
   message: string;
   contactId?: string;
+  // Nuevos campos opcionales para IDs reales de Chatwoot
+  conversationId?: number;
+  chatwootContactId?: number;
   phone?: string;
   email?: string;
   firstName?: string;
@@ -124,11 +127,14 @@ class N8NService {
     }
 
     try {
-      // Generar IDs numéricos basados en strings
-      const conversationId = this.generateNumericId(payload.sessionId);
-      const contactId = payload.contactId
-        ? this.generateNumericId(payload.contactId)
-        : this.generateNumericId(payload.sessionId + '_contact');
+      // Usar IDs reales si existen, o generar basados en strings como fallback
+      const conversationId = payload.conversationId || this.generateNumericId(payload.sessionId);
+
+      const contactId = payload.chatwootContactId
+        ? payload.chatwootContactId
+        : (payload.contactId
+          ? this.generateNumericId(payload.contactId)
+          : this.generateNumericId(payload.sessionId + '_contact'));
 
       const inboxId = config.chatwoot.inboxId ? parseInt(config.chatwoot.inboxId) : 5; // Default fallback
       const accountId = config.chatwoot.accountId ? parseInt(config.chatwoot.accountId) : 1; // Default fallback
