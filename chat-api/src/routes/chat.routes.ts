@@ -14,7 +14,9 @@ import { n8nService } from '../services/n8nService.js';
 import { logger } from '../utils/logger.js';
 import { validate, userMessageSchema, n8nWebhookSchema } from '../utils/validators.js';
 import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
+import type { N8NWebhookRequest, ChatwootWebhookPayload } from '../types/index.js';
 import { upload } from '../config/multer.js';
+import { config } from '../config/index.js';
 
 const router = Router();
 
@@ -483,8 +485,12 @@ router.post(
     }
 
     // Construir URL completa
-    const baseUrl = `${req.protocol}://${req.get('host')}`;
-    const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    // Usar PUBLIC_URL configurada o fallback a request host
+    const baseUrl = config.publicUrl || `${req.protocol}://${req.get('host')}`;
+
+    // Asegurar que no haya doble slash si baseUrl ya termina en /
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const fileUrl = `${cleanBaseUrl}/uploads/${req.file.filename}`;
 
     logger.info('[ChatRoutes] File uploaded', {
       filename: req.file.filename,
