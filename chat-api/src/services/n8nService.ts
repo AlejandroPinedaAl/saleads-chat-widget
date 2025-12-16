@@ -140,6 +140,32 @@ class N8NService {
       const inboxId = config.chatwoot.inboxId ? parseInt(config.chatwoot.inboxId) : 5; // Default fallback
       const accountId = config.chatwoot.accountId ? parseInt(config.chatwoot.accountId) : 1; // Default fallback
 
+      // Detectar si el mensaje es una URL de archivo (Auto-detection)
+      let detectedAttachment = null;
+      if (payload.message && (payload.message.startsWith('http://') || payload.message.startsWith('https://'))) {
+        const urlLower = payload.message.toLowerCase();
+        const ext = urlLower.split('.').pop();
+
+        // Helper simple para detectar tipo
+        let type: 'image' | 'audio' | 'video' | 'file' | null = null;
+
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext || '')) type = 'image';
+        else if (['mp3', 'wav', 'ogg', 'oga', 'm4a'].includes(ext || '')) type = 'audio';
+        else if (['mp4', 'avi', 'mov'].includes(ext || '')) type = 'video';
+        else if (ext === 'webm') {
+          // Webm puede ser video o audio. Asumimos audio si dice 'voice' (común en grabadoras web)
+          type = urlLower.includes('voice') ? 'audio' : 'video';
+        }
+
+        if (type) {
+          detectedAttachment = {
+            type,
+            url: payload.message,
+            fileSize: 0 // No conocemos el tamaño aquí
+          };
+        }
+      }
+
       // Construir payload compatible con Chatwoot
       // Estructura:
       // {
@@ -155,7 +181,12 @@ class N8NService {
       // }
 
       // Preparar attachments si existen
-      const attachments = payload.attachments?.map(att => {
+      const attachmentsList = payload.attachments ? [...payload.attachments] : [];
+      if (detectedAttachment) {
+        attachmentsList.push(detectedAttachment);
+      }
+
+      const attachments = attachmentsList.map(att => {
         // Asegurar que la URL sea absoluta/pública
         let dataUrl = att.url;
         if (dataUrl.startsWith('/')) {
@@ -167,7 +198,7 @@ class N8NService {
           data_url: dataUrl,
           file_size: att.fileSize || 0
         };
-      }) || [];
+      });
 
       // Nombre del remitente
       const senderName = payload.firstName && payload.lastName
