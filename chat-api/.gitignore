@@ -34,3 +34,13 @@ build
 # OS
 Thumbs.db
 
+# Uploads (archivos temporales)
+uploads/
+*.webm
+*.jpeg
+*.jpg
+*.png
+*.mp4
+*.wav
+*.mp3
+
