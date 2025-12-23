@@ -66,7 +66,7 @@ export const MessageInput: React.FC = () => {
   /**
    * Enviar mensaje (texto o multimedia)
    */
-  const handleSend = async (content?: string, type: 'user' | 'image' | 'audio' | 'video' = 'user') => {
+  const handleSend = async (content?: string, mediaType?: 'image' | 'audio' | 'video') => {
     const messageContent = content || inputValue.trim();
 
     if (!messageContent || isSending || !isConnected) {
@@ -76,8 +76,9 @@ export const MessageInput: React.FC = () => {
     setIsSending(true);
 
     // Agregar mensaje del usuario al estado (optimistic update)
+    // SIEMPRE es type: 'user', pero si es multimedia lo indicamos con el mediaType
     const userMessage = {
-      type: type === 'user' ? 'user' : type as any, // TypeScript workaround si types difieren
+      type: mediaType || 'user', // Si es imagen/audio/video, usar ese tipo
       content: messageContent,
       status: 'sending' as const,
     };
@@ -89,7 +90,7 @@ export const MessageInput: React.FC = () => {
       // Enviar por socket. Si es multimedia, el contenido es la URL
       socketService.sendMessage(messageContent, {
         phone: userPhone,
-        type: type, // Enviamos el tipo para que n8n o backend lo sepan
+        mediaType: mediaType, // Enviamos el mediaType para que n8n o backend lo sepan
       });
 
       // Simular éxito (el socket no retorna ack inmediato en este setup, dependemos de evento)
@@ -124,11 +125,11 @@ export const MessageInput: React.FC = () => {
     try {
       const result = await uploadFile(file);
 
-      let type: 'image' | 'video' | 'audio' = 'image';
-      if (file.type.startsWith('video/')) type = 'video';
-      if (file.type.startsWith('audio/')) type = 'audio';
+      let mediaType: 'image' | 'video' | 'audio' = 'image';
+      if (file.type.startsWith('video/')) mediaType = 'video';
+      if (file.type.startsWith('audio/')) mediaType = 'audio';
 
-      await handleSend(result.url, type);
+      await handleSend(result.url, mediaType);
     } catch (error) {
       console.error('Upload error:', error);
       addMessage({ type: 'system', content: 'Error al subir archivo' });
@@ -161,7 +162,7 @@ export const MessageInput: React.FC = () => {
         setIsSending(true);
         try {
           const result = await uploadFile(audioFile);
-          await handleSend(result.url, 'audio');
+          await handleSend(result.url, 'audio'); // Pasamos 'audio' como mediaType
         } catch (error) {
           console.error('Audio upload error:', error);
           addMessage({ type: 'system', content: 'Error al enviar audio' });

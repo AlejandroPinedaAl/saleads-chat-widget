@@ -35,12 +35,12 @@ export const MessageList: React.FC = () => {
 
   // Renderizar mensaje individual
   const renderMessage = (message: Message) => {
-    const isUser = message.type === 'user';
+    // Los mensajes del usuario pueden ser: 'user', 'image', 'audio', 'video'
+    // Los mensajes del agente tienen type: 'agent'
+    // Los mensajes del sistema tienen type: 'system'
+    const isUser = message.type === 'user' || message.type === 'image' || message.type === 'audio' || message.type === 'video';
+    const isAgent = message.type === 'agent';
     const isSystem = message.type === 'system';
-
-    // Tipos multimedia se tratan como mensajes de usuario o agente según el origen, 
-    // pero aquí asumimos que si no es system, se renderiza en burbuja
-
 
     // Mensaje del sistema (errores, notificaciones)
     if (isSystem) {
@@ -101,17 +101,17 @@ export const MessageList: React.FC = () => {
                 alt="Imagen adjunta"
                 className="sw-max-w-full sw-rounded-lg sw-cursor-pointer hover:sw-opacity-90"
                 onClick={() => window.open(message.content, '_blank')}
-                style={{ maxHeight: '200px' }}
+                style={{ maxHeight: '200px', maxWidth: '200px' }}
               />
             ) : message.type === 'video' ? (
               <video
                 src={message.content}
                 controls
                 className="sw-max-w-full sw-rounded-lg"
-                style={{ maxHeight: '200px' }}
+                style={{ maxHeight: '200px', maxWidth: '250px' }}
               />
             ) : message.type === 'audio' ? (
-              <audio src={message.content} controls className="sw-w-full sw-min-w-[200px]" />
+              <audio src={message.content} controls className="sw-w-full sw-min-w-[200px] sw-max-w-[250px]" />
             ) : (
               <div
                 className="sw-text-sm sw-whitespace-pre-wrap"
