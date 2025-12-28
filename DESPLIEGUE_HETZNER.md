@@ -349,3 +349,4 @@ Comparte los logs o errores que veas.
 
 **Desarrollado por SaleAds** | Versión 1.0.0 | Diciembre 2024
 
+

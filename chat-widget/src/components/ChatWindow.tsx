@@ -93,8 +93,11 @@ export const ChatWindow: React.FC = () => {
       </div>
 
       {/* Body - Chat Instantáneo (PhoneCapture eliminado/movido) */}
-      <MessageList />
-      <MessageInput />
+      {/* Contenedor flex para que MessageList sea scrolleable y MessageInput quede fijo */}
+      <div className="sw-flex sw-flex-col sw-flex-1 sw-min-h-0">
+        <MessageList />
+        <MessageInput />
+      </div>
 
       {/* GDPR Notice (si está habilitado) */}
       {config.gdprNotice && (

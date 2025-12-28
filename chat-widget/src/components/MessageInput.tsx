@@ -5,7 +5,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useChatStore, selectConfig, selectIsConnected } from '@/store/chatStore';
-import { translations } from '@/types';
+import { translations, type MessageType } from '@/types';
 import { socketService } from '@/services/socketService';
 
 export const MessageInput: React.FC = () => {
@@ -78,7 +78,7 @@ export const MessageInput: React.FC = () => {
     // Agregar mensaje del usuario al estado (optimistic update)
     // SIEMPRE es type: 'user', pero si es multimedia lo indicamos con el mediaType
     const userMessage = {
-      type: mediaType || 'user', // Si es imagen/audio/video, usar ese tipo
+      type: (mediaType || 'user') as MessageType, // Si es imagen/audio/video, usar ese tipo
       content: messageContent,
       status: 'sending' as const,
     };
@@ -197,7 +197,7 @@ export const MessageInput: React.FC = () => {
   };
 
   return (
-    <div className="sw-border-t sw-border-gray-200 sw-bg-white sw-p-4">
+    <div className="sw-flex-shrink-0 sw-border-t sw-border-gray-200 sw-bg-white sw-p-4">
       <input
         type="file"
         ref={fileInputRef}

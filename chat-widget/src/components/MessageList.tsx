@@ -39,7 +39,6 @@ export const MessageList: React.FC = () => {
     // Los mensajes del agente tienen type: 'agent'
     // Los mensajes del sistema tienen type: 'system'
     const isUser = message.type === 'user' || message.type === 'image' || message.type === 'audio' || message.type === 'video';
-    const isAgent = message.type === 'agent';
     const isSystem = message.type === 'system';
 
     // Mensaje del sistema (errores, notificaciones)
@@ -193,14 +192,16 @@ export const MessageList: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className="sw-flex-1 sw-overflow-y-auto sw-bg-white"
+      className="sw-flex-1 sw-overflow-y-auto sw-bg-white sw-min-h-0"
       style={{
         scrollbarWidth: 'thin',
         scrollbarColor: '#CBD5E0 #F7FAFC',
+        overflowY: 'auto',
+        WebkitOverflowScrolling: 'touch', // Mejora el scroll en iOS
       }}
     >
       {/* Lista de mensajes */}
-      <div className="sw-py-4">
+      <div className="sw-py-4 sw-min-h-full">
         {messages.length === 0 ? (
           // Estado vacío (no debería ocurrir, siempre hay mensaje de bienvenida)
           <div className="sw-flex sw-items-center sw-justify-center sw-h-full sw-text-gray-400 sw-text-sm">
